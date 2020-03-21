@@ -53,6 +53,8 @@ function main(){
         },
     }
 
+    gl.useProgram(programInfo.program);
+
     //initialise camera move parameters
     var lookAtParams = {
         step: 0.1,
@@ -147,21 +149,21 @@ function initBuffers(gl){
         6.0, 4.0, 6.0, //15
 
         //v1-v2-v6-v7 => 16, 17, 18, 19
-        0.0,0.0,0.0,  0.0,0.0,1.5,  1.5,0.0,0.0,  1.5,0.0,1.5,
+        0.0,0.0001,0.0,  0.0,0.0001,1.5,  1.5,0.0001,0.0,  1.5,0.0001,1.5,
         //v3-v4-v8-v9 => 20, 21, 22, 23
-        0.0,0.0,3.0,  0.0,0.0,4.5,  1.5,0.0,3.0,  1.5,0.0,4.5,
+        0.0,0.0001,3.0,  0.0,0.0001,4.5,  1.5,0.0001,3.0,  1.5,0.0001,4.5,
         //v7-v8-v12-v13 => 24, 25, 26, 27
-        1.5,0.0,1.5,  1.5,0.0,3.0,  3.0,0.0,1.5,  3.0,0.0,3.0,
+        1.5,0.0001,1.5,  1.5,0.0001,3.0,  3.0,0.0001,1.5,  3.0,0.0001,3.0,
         //v9-v10-v14-v15 => 28, 29, 30, 31
-        1.5,0.0,4.5,  1.5,0.0,6.0,  3.0,0.0,4.5,  3.0,0.0,6.0,
+        1.5,0.0001,4.5,  1.5,0.0001,6.0,  3.0,0.0001,4.5,  3.0,0.0001,6.0,
         //v11-v12-v16-v17 => 32, 33, 34, 35
-        3.0,0.0,0.0,  3.0,0.0,1.5,  4.5,0.0,0.0,  4.5,0.0,1.5,
+        3.0,0.0001,0.0,  3.0,0.0001,1.5,  4.5,0.0001,0.0,  4.5,0.0001,1.5,
         //v13-v14-v18-v19 => 36, 37, 38, 39
-        3.0,0.0,3.0,  3.0,0.0,4.5,  4.5,0.0,3.0,  4.5,0.0,4.5,
+        3.0,0.0001,3.0,  3.0,0.0001,4.5,  4.5,0.0001,3.0,  4.5,0.0001,4.5,
         //v17-v18-v22-v23 => 40, 41, 42, 43
-        4.5,0.0,1.5,  4.5,0.0,3.0,  6.0,0.0,1.5,  6.0,0.0,3.0,
+        4.5,0.0001,1.5,  4.5,0.0001,3.0,  6.0,0.0001,1.5,  6.0,0.0001,3.0,
         //v19-v20-v24-v25 => 44, 45, 46, 47
-        4.5,0.0,4.5,  4.5,0.0,6.0,  6.0,0.0,4.5,  6.0,0.0,6.0,
+        4.5,0.0001,4.5,  4.5,0.0001,6.0,  6.0,0.0001,4.5,  6.0,0.0001,6.0,
     ]);
 
     //create buffer for vertices
@@ -283,6 +285,8 @@ function initBuffers(gl){
     };
 }
 
+
+
 //rendering the scene
 function draw(gl, canvas, programInfo, buffers, lookAtParams){
     //clear the canvas to opaque black
@@ -352,9 +356,6 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams){
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.roomIndices);
-
-    //inform webGL of vertex shader program
-    gl.useProgram(programInfo.program);
 
     //set shader uniforms
     gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMatrix.elements);
