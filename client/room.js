@@ -1,6 +1,8 @@
-//Current scene:
-//  rainbow 5x5 floor made from one square plane through y=0
-//  perspective looking at origin 
+// Key:
+// u_Example = uniform variable (in shader)
+// a_Example = attribute (in shader)
+// exampleVariable = pointers to shader variables/attributes
+// exampleVar = local variable used to give values
 
 
 const VSHADER_SOURCE = 
@@ -41,7 +43,7 @@ const FSHADER_SOURCE =
     'void main(){\n' +
     // '   gl_FragColor = u_Colour;\n' + // for colour surfaces
     // '   gl_FragColor = texture2D(u_Sampler, u_TexCoord);\n' + // for texture surfaces
-    '   highp vec4 texColour = texture2D(u_Sampler, u_TexCoord);\n' +
+    '   highp vec4 texColour = u_Colour * texture2D(u_Sampler, u_TexCoord);\n' +
     '   gl_FragColor = vec4(u_Lighting*texColour.rgb, texColour.a);\n' +
     '}\n';
 
@@ -374,9 +376,9 @@ function initBuffers(gl){
 
         // Right Wall
         0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0,
+        0.0,  0.0,
+        0.0,  0.0,
+        0.0,  0.0,
 
         // Ceiling
         0.0,  0.0,
@@ -559,6 +561,7 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
     gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
     gl.uniform3fv(programInfo.uniformLocations.lightDirection, lightDir.elements);
 
+    
     //draw arrays
     {
         const v = 24;
