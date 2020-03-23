@@ -7,18 +7,28 @@ const VSHADER_SOURCE =
     'attribute vec4 a_Position;\n' +
     'attribute vec4 a_Colour;\n' +
     'attribute vec2 a_TexCoord;\n' +
+    'attribute vec3 a_Normal;\n' +
 
     'uniform mat4 u_ModelMatrix;\n' +
     'uniform mat4 u_ProjMatrix;\n' +
     'uniform mat4 u_ViewMatrix;\n' +
+    'uniform mat4 u_NormalMatrix;\n' +
+    'uniform highp vec3 u_LightDirection;\n' +
+    'uniform highp vec3 u_LightColour;\n' +
     
     'varying lowp vec4 u_Colour;\n' +
     'varying highp vec2 u_TexCoord;\n' +
+    'varying highp vec3 u_Lighting;\n' +
 
     'void main(){\n' +
     '   gl_Position = u_ProjMatrix * u_ModelMatrix * u_ViewMatrix * a_Position;\n' +
     '   u_Colour = a_Colour;\n' +
     '   u_TexCoord = a_TexCoord;\n' +
+
+    '   highp vec3 ambientLight = vec3(0.4, 0.4, 0.4);\n' +
+    '   highp vec4 normal = u_NormalMatrix * vec4(a_Normal, 1.0);\n' +
+    '   highp float nDotL = max(dot(normal.xyz, u_LightDirection), 0.0);\n' +
+    '   u_Lighting = ambientLight + (u_LightColour * nDotL);\n' +
     '}\n';
 
 const FSHADER_SOURCE = 
@@ -26,10 +36,13 @@ const FSHADER_SOURCE =
 
     'varying lowp vec4 u_Colour;\n' +
     'varying highp vec2 u_TexCoord;\n' +
+    'varying highp vec3 u_Lighting;\n' +
 
     'void main(){\n' +
-    // '   gl_FragColor = u_Colour;\n' +
-    '   gl_FragColor = texture2D(u_Sampler, u_TexCoord);\n' +
+    // '   gl_FragColor = u_Colour;\n' + // for colour surfaces
+    // '   gl_FragColor = texture2D(u_Sampler, u_TexCoord);\n' + // for texture surfaces
+    '   highp vec4 texColour = texture2D(u_Sampler, u_TexCoord);\n' +
+    '   gl_FragColor = vec4(u_Lighting*texColour.rgb, texColour.a);\n' +
     '}\n';
 
 function main(){
@@ -49,15 +62,19 @@ function main(){
     const programInfo = {
         program: shaderProgram,
         attribLocations: {
-            u_Position: gl.getAttribLocation(shaderProgram, 'a_Position'),
-            u_Colour: gl.getAttribLocation(shaderProgram, 'a_Colour'),
-            u_TexCoord: gl.getAttribLocation(shaderProgram, 'a_TexCoord'),
+            position: gl.getAttribLocation(shaderProgram, 'a_Position'),
+            colour: gl.getAttribLocation(shaderProgram, 'a_Colour'),
+            texCoord: gl.getAttribLocation(shaderProgram, 'a_TexCoord'),
+            normal: gl.getAttribLocation(shaderProgram, 'a_Normal'),
         },
         uniformLocations: {
             projMatrix: gl.getUniformLocation(shaderProgram, 'u_ProjMatrix'),
             modelMatrix: gl.getUniformLocation(shaderProgram, 'u_ModelMatrix'),
             viewMatrix: gl.getUniformLocation(shaderProgram, 'u_ViewMatrix'),
-            u_Sampler: gl.getUniformLocation(shaderProgram, 'u_Sampler'),
+            sampler: gl.getUniformLocation(shaderProgram, 'u_Sampler'),
+            normalMatrix: gl.getUniformLocation(shaderProgram, 'u_NormalMatrix'),
+            lightDirection: gl.getUniformLocation(shaderProgram, 'u_LightDirection'),
+            lightColour: gl.getUniformLocation(shaderProgram, 'u_LightColour'),
         },
     }
 
@@ -194,7 +211,7 @@ function loadTexture(gl, programInfo, url){
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     // Tell the shader we bound the texture to texture unit 0
-    gl.uniform1i(programInfo.uniformLocations.u_Sampler, 0);
+    gl.uniform1i(programInfo.uniformLocations.sampler, 0);
 
     return texture;
 }
@@ -410,7 +427,7 @@ function initBuffers(gl){
     return {
         roomPosition: roomVertexBuffer,
         roomColour: roomColourBuffer,
-        roomNormals: roomNormalsBuffer,
+        roomNormal: roomNormalsBuffer,
         roomIndices: roomIndexBuffer,
         texCoord: texCoordBuffer,
     };
@@ -425,19 +442,24 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
     gl.depthFunc(gl.LEQUAL);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    //set perspective matrix
-    const projMatrix = new Matrix4();
-    projMatrix.setPerspective(55, canvas.width/canvas.height, 0.1, 100);
+    //set projection matrix
+    const projMat = new Matrix4();
+    projMat.setPerspective(55, canvas.width/canvas.height, 0.1, 100);
 
-    //set the projection matrix
-    const modelMatrix = new Matrix4();
+    //set the model matrix
+    const modelMat = new Matrix4();
 
     //set the view matrix
-    const viewMatrix = new Matrix4();
-    viewMatrix.setLookAt(
+    const viewMat = new Matrix4();
+    viewMat.setLookAt(
         lookAtParams.ex, lookAtParams.ey, lookAtParams.ez,  
         lookAtParams.lx, lookAtParams.ly, lookAtParams.lz,  
         0.0, 1.0, 0.0);
+
+    //set the normal matrix
+    const normalMat = new Matrix4();
+    normalMat.setInverseOf(modelMat);
+    normalMat.transpose();
 
     //tell webGL how to extract vertex positions from buffer
     {
@@ -454,14 +476,14 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
 
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.roomPosition);
         gl.vertexAttribPointer(
-            programInfo.attribLocations.u_Position,
+            programInfo.attribLocations.position,
             n,
             type,
             normalise,
             stride,
             offset
         );
-        gl.enableVertexAttribArray(programInfo.attribLocations.u_Position);
+        gl.enableVertexAttribArray(programInfo.attribLocations.position);
     }
 
     //tell webGL how to extract vertex colours from buffer in the same manner
@@ -474,14 +496,14 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
 
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.roomColour);
         gl.vertexAttribPointer(
-            programInfo.attribLocations.u_Colour,
+            programInfo.attribLocations.colour,
             n,
             type,
             normalise,
             stride,
             offset
         );
-        gl.enableVertexAttribArray(programInfo.attribLocations.u_Colour);
+        gl.enableVertexAttribArray(programInfo.attribLocations.colour);
     }
 
     // tell webgl how to pull out the texture coordinates from buffer
@@ -493,22 +515,49 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
         const offset = 0; // how many bytes inside the buffer to start from
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texCoord);
         gl.vertexAttribPointer(
-            programInfo.attribLocations.u_TexCoord, 
+            programInfo.attribLocations.texCoord, 
             num, 
             type, 
             normalize, 
             stride, 
             offset
         );
-        gl.enableVertexAttribArray(programInfo.attribLocations.u_TexCoord);
+        gl.enableVertexAttribArray(programInfo.attribLocations.texCoord);
+    }
+
+    // specify the normal information
+    {
+        const n = 3;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.roomNormal);
+        gl.vertexAttribPointer(
+            programInfo.attribLocations.normal,
+            n,
+            type,
+            normalize,
+            stride,
+            offset
+        );
+        gl.enableVertexAttribArray(programInfo.attribLocations.normal);
     }
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.roomIndices);
 
+    //set light colour and direction
+    const lightCol = new Vector3([1.0, 1.0, 1.0]);
+    const lightDir = new Vector3([0.85, 0.8, 0.75]);
+    lightDir.normalize();
+
     //set shader uniforms
-    gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMatrix.elements);
-    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMatrix.elements);
-    gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMatrix.elements);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMat.elements);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMat.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightDirection, lightDir.elements);
 
     //draw arrays
     {
