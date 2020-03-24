@@ -96,21 +96,32 @@ function main(){
     //initialise vertex buffer
     const buffers = initBuffers(gl);
 
-    //load texture
-    const roomTex = loadTexture(gl, programInfo, 'floor.png');
+    //load textures into texture array
+    let textures = new Array();
+
+    const floorTex = loadTexture(gl, programInfo, 'floor.png');
+    textures.push(floorTex);
+
+    const wallTex = loadTexture(gl, programInfo, 'wall1.png');
+    textures.push(wallTex);
+    textures.push(wallTex);
+
+    const ceilingTex = loadTexture(gl, programInfo, 'ceiling.png');
+    textures.push(ceilingTex);
+
 
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
 
     // function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, buffers, lookAtParams, roomTex);
+        draw(gl, canvas, programInfo, buffers, lookAtParams, textures);
         requestAnimationFrame(render);
     }
 
     // moving camera on keypress
     document.onkeydown = function(ev){
-        keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtParams, roomTex);
+        keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtParams, textures);
     };
 
     // rendering initial scene
@@ -118,7 +129,7 @@ function main(){
 }
 
 //function to move camera when key pressed
-function keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtParams, roomTex){
+function keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtParams, textures){
     switch (ev.keyCode) {
         case 38: //up arrow
             lookAtParams.ly += lookAtParams.step;
@@ -156,7 +167,7 @@ function keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtPara
 
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
-    draw(gl, canvas, programInfo, buffers, lookAtParams, roomTex);
+    draw(gl, canvas, programInfo, buffers, lookAtParams, textures);
 }
 
 //function to determine if dimentions of texture are of power 2
@@ -246,33 +257,6 @@ function initBuffers(gl){
         7.5, 4.0, 0.0, //13
         0.0, 4.0, 7.5, //14
         7.5, 4.0, 7.5, //15
-
-        // //v1-v2-v6-v7 => 16, 17, 18, 19
-        // 0.0,0.0001,0.0,  0.0,0.0001,1.5,  1.5,0.0001,0.0,  1.5,0.0001,1.5,
-        // //v3-v4-v8-v9 => 20, 21, 22, 23
-        // 0.0,0.0001,3.0,  0.0,0.0001,4.5,  1.5,0.0001,3.0,  1.5,0.0001,4.5,
-        // //v7-v8-v12-v13 => 24, 25, 26, 27
-        // 1.5,0.0001,1.5,  1.5,0.0001,3.0,  3.0,0.0001,1.5,  3.0,0.0001,3.0,
-        // //v9-v10-v14-v15 => 28, 29, 30, 31
-        // 1.5,0.0001,4.5,  1.5,0.0001,6.0,  3.0,0.0001,4.5,  3.0,0.0001,6.0,
-        // //v11-v12-v16-v17 => 32, 33, 34, 35
-        // 3.0,0.0001,0.0,  3.0,0.0001,1.5,  4.5,0.0001,0.0,  4.5,0.0001,1.5,
-        // //v13-v14-v18-v19 => 36, 37, 38, 39
-        // 3.0,0.0001,3.0,  3.0,0.0001,4.5,  4.5,0.0001,3.0,  4.5,0.0001,4.5,
-        // //v17-v18-v22-v23 => 40, 41, 42, 43
-        // 4.5,0.0001,1.5,  4.5,0.0001,3.0,  6.0,0.0001,1.5,  6.0,0.0001,3.0,
-        // //v19-v20-v24-v25 => 44, 45, 46, 47
-        // 4.5,0.0001,4.5,  4.5,0.0001,6.0,  6.0,0.0001,4.5,  6.0,0.0001,6.0,
-        // //v21-v26-v22-v27 => 48, 49, 50, 51
-        // 6.0,0.0001,0.0,  7.5,0.0001,0.0,  6.0,0.0001,1.5,  7.5,0.0001,1.5,
-        // //v23-v28-v24-v29 => 52, 53, 54, 55
-        // 6.0,0.0001,3.0,  7.5,0.0001,3.0,  6.0,0.0001,4.5,  7.5,0.0001,4.5,
-        // //v25-v30-v32-v31 => 56, 57, 58, 59
-        // 6.0,0.0001,6.0,  7.5,0.0001,6.0,  6.0,0.0001,7.5,  7.5,0.0001,7.5,
-        // //v15-v20-v34-v33 => 60, 61, 62, 63
-        // 3.0,0.0001,6.0,  4.5,0.0001,6.0,  3.0,0.0001,7.5,  4.5,0.0001,7.5,
-        // //v5-v10-v36-v35 => 64, 65, 66, 67
-        // 0.0,0.0001,6.0,  1.5,0.0001,6.0,  0.0,0.0001,7.5,  1.5,0.0001,7.5,
     ]);
 
     //create buffer for vertices
@@ -338,21 +322,6 @@ function initBuffers(gl){
         0.9, 0.9, 0.9, 1.0,
         0.9, 0.9, 0.9, 1.0,
         0.9, 0.9, 0.9, 1.0,
-
-        // //floor squares
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0, 
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0, 
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0, 
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0, 
-        // 0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0,  0.0,0.0,0.0,1.0, 
     ]);
 
     //pass this colour data into a colour buffer
@@ -364,27 +333,27 @@ function initBuffers(gl){
     const texCoordinates = new Float32Array([
         // Floor
         0.0,  0.0,
+        0.0,  1.0,
         1.0,  0.0,
         1.0,  1.0,
-        0.0,  1.0,
 
         // Left Wall
-        0.0,  0.0,
         1.0,  0.0,
+        0.0,  0.0,
         1.0,  1.0,
         0.0,  1.0,
 
         // Right Wall
-        0.0,  0.0,
-        1.0,  0.0,
+        0.5,  1.0,
         1.0,  1.0,
-        0.0,  1.0,
+        0.5,  0.5,
+        1.0,  0.5,
 
         // Ceiling
         0.0,  0.0,
         1.0,  0.0,
-        1.0,  1.0,
         0.0,  1.0,
+        1.0,  1.0,
     ]);
     
     const texCoordBuffer = gl.createBuffer();
@@ -404,21 +373,6 @@ function initBuffers(gl){
         
         //ceiling
         12,13,14,  13,14,15,
-
-        // //floor squares
-        // 16,17,18,  17,18,19,
-        // 20,21,22,  21,22,23,
-        // 24,25,26,  25,26,27,
-        // 28,29,30,  29,30,31,
-        // 32,33,34,  33,34,35,
-        // 36,37,38,  37,38,39,
-        // 40,41,42,  41,42,43,
-        // 44,45,46,  45,46,47,
-        // 48,49,50,  49,50,51,
-        // 52,53,54,  53,54,55,
-        // 56,57,58,  57,58,59,
-        // 60,61,62,  61,62,63,
-        // 64,65,66,  65,66,67,
     ]);
 
     const roomIndexBuffer = gl.createBuffer();
@@ -436,7 +390,7 @@ function initBuffers(gl){
 }
 
 //rendering the scene
-function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
+function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -561,17 +515,34 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, texture){
     gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
     gl.uniform3fv(programInfo.uniformLocations.lightDirection, lightDir.elements);
 
-    
-    //draw arrays
-    {
-        const v = 24;
-        const type = gl.UNSIGNED_SHORT;
-        const offset = 0;
-        gl.drawElements(
-            gl.TRIANGLES, 
-            v, 
-            type, 
-            offset
-        );
+    const ntex = 4;
+    for(let i=0; i<ntex; i++){
+
+        gl.bindTexture(gl.TEXTURE_2D, textures[i]);
+
+        {
+            const v = 6;
+            const type = gl.UNSIGNED_SHORT;
+            const offset = 2*i*6;
+            gl.drawElements(
+                gl.TRIANGLES, 
+                v, 
+                type, 
+                offset
+            );
+        }
     }
+
+    // //draw arrays
+    // {
+    //     const v = 24;
+    //     const type = gl.UNSIGNED_SHORT;
+    //     const offset = 0;
+    //     gl.drawElements(
+    //         gl.TRIANGLES, 
+    //         v, 
+    //         type, 
+    //         offset
+    //     );
+    // }
 }
