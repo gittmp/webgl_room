@@ -2,44 +2,48 @@
 // u_Example = uniform variable (in shader)
 // a_Example = attribute (in shader)
 // exampleVariable = pointers to shader variables/attributes
-// exampleVar = local variable used to give values
+// exVar = local variable used to give values
 
+const VSHADER_SOURCE =
+  'attribute vec4 a_Position;\n' +
+  'attribute vec4 a_Normal;\n' +
+  'attribute vec2 a_TexCoord;\n' +
 
-const VSHADER_SOURCE = 
-    'attribute vec4 a_Position;\n' +
-    'attribute vec2 a_TexCoord;\n' +
-    'attribute vec3 a_Normal;\n' +
+  'uniform mat4 u_ModelMatrix;\n' +
+  'uniform mat4 u_ProjMatrix;\n' +
+  'uniform mat4 u_ViewMatrix;\n' +
+  'uniform mat4 u_NormalMatrix;\n' +
+  
+  'varying highp vec3 v_Normal;\n' +
+  'varying highp vec2 v_TexCoord;\n' +
+  'varying highp vec3 v_Position;\n' +
+  
+  'void main() {\n' +
+  '   gl_Position = u_ProjMatrix * u_ModelMatrix * u_ViewMatrix * a_Position;\n' +
+  '   v_Position = vec3(u_ModelMatrix * a_Position);\n' +
+  '   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
+  '   v_TexCoord = a_TexCoord;\n' +
+  '}\n';
 
-    'uniform mat4 u_ModelMatrix;\n' +
-    'uniform mat4 u_ProjMatrix;\n' +
-    'uniform mat4 u_ViewMatrix;\n' +
-    'uniform mat4 u_NormalMatrix;\n' +
-    'uniform highp vec3 u_LightDirection;\n' +
-    'uniform highp vec3 u_LightColour;\n' +
-    
-    'varying highp vec2 u_TexCoord;\n' +
-    'varying highp vec3 u_Lighting;\n' +
+const FSHADER_SOURCE =
+  'uniform highp vec3 u_LightColour;\n' +     
+  'uniform highp vec3 u_LightPosition;\n' +  
+  'uniform highp vec3 u_AmbientLight;\n' +  
+  'uniform sampler2D u_Sampler;\n' +
 
-    'void main(){\n' +
-    '   gl_Position = u_ProjMatrix * u_ModelMatrix * u_ViewMatrix * a_Position;\n' +
-    '   u_TexCoord = a_TexCoord;\n' +
+  'varying highp vec3 v_Normal;\n' +
+  'varying highp vec3 v_Position;\n' +
+  'varying highp vec2 v_TexCoord;\n' +
 
-    '   highp vec3 ambientLight = vec3(0.4, 0.4, 0.4);\n' +
-    '   highp vec4 normal = u_NormalMatrix * vec4(a_Normal, 1.0);\n' +
-    '   highp float nDotL = max(dot(normal.xyz, u_LightDirection), 0.0);\n' +
-    '   u_Lighting = ambientLight + (u_LightColour * nDotL);\n' +
-    '}\n';
-
-const FSHADER_SOURCE = 
-    'uniform sampler2D u_Sampler;\n' +
-
-    'varying highp vec2 u_TexCoord;\n' +
-    'varying highp vec3 u_Lighting;\n' +
-
-    'void main(){\n' +
-    '   highp vec4 texColour = texture2D(u_Sampler, u_TexCoord);\n' +
-    '   gl_FragColor = vec4(u_Lighting*texColour.rgb, texColour.a);\n' +
-    '}\n';
+  'void main() {\n' +
+  '   highp vec3 normal = normalize(v_Normal);\n' +
+  '   highp vec3 lightDirection = normalize(u_LightPosition - v_Position);\n' +
+  '   highp float nDotL = max(dot(lightDirection, normal), 0.0);\n' +
+  '   highp vec4 TexColour = texture2D(u_Sampler, v_TexCoord);\n' +
+  '   highp vec3 diffuse = u_LightColour * TexColour.rgb * nDotL * 1.2;\n' +
+  '   highp vec3 ambient = u_AmbientLight * TexColour.rgb;\n' +
+  '   gl_FragColor = vec4(diffuse + ambient, TexColour.a);\n' +
+  '}\n';
 
 function main(){
     const canvas = document.getElementById('wglCanvas');
@@ -59,17 +63,17 @@ function main(){
         program: shaderProgram,
         attribLocations: {
             position: gl.getAttribLocation(shaderProgram, 'a_Position'),
-            colour: gl.getAttribLocation(shaderProgram, 'a_Colour'),
             texCoord: gl.getAttribLocation(shaderProgram, 'a_TexCoord'),
             normal: gl.getAttribLocation(shaderProgram, 'a_Normal'),
         },
         uniformLocations: {
-            projMatrix: gl.getUniformLocation(shaderProgram, 'u_ProjMatrix'),
             modelMatrix: gl.getUniformLocation(shaderProgram, 'u_ModelMatrix'),
+            projMatrix: gl.getUniformLocation(shaderProgram, 'u_ProjMatrix'),
             viewMatrix: gl.getUniformLocation(shaderProgram, 'u_ViewMatrix'),
-            sampler: gl.getUniformLocation(shaderProgram, 'u_Sampler'),
             normalMatrix: gl.getUniformLocation(shaderProgram, 'u_NormalMatrix'),
-            lightDirection: gl.getUniformLocation(shaderProgram, 'u_LightDirection'),
+            sampler: gl.getUniformLocation(shaderProgram, 'u_Sampler'),
+            lightPosition: gl.getUniformLocation(shaderProgram, 'u_LightPosition'),
+            ambientLight: gl.getUniformLocation(shaderProgram, 'u_AmbientLight'),
             lightColour: gl.getUniformLocation(shaderProgram, 'u_LightColour'),
         },
     }
@@ -512,21 +516,23 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.roomIndices);
 
-    //set light colour and direction
+    //set light parameters
+    const ambLight = new Vector3([0.2, 0.2, 0.2]);
     const lightCol = new Vector3([1.0, 1.0, 1.0]);
-    const lightDir = new Vector3([0.85, 0.8, 0.75]);
-    lightDir.normalize();
+    const lightPos = new Vector3([3.75, 3.25, 3.75]);
 
     //set shader uniforms
     gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMat.elements);
+
+    gl.uniform3fv(programInfo.uniformLocations.ambientLight, ambLight.elements);
     gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
-    gl.uniform3fv(programInfo.uniformLocations.lightDirection, lightDir.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightPos.elements);
 
     // ntex = number of textures = one for each room side (4) + one for each light cord side (4) + one for each side of the light shade (6)
-    const ntex = 4+4+6;
+    const ntex = 4+4+5;
     for(let i=0; i<ntex; i++){
 
         gl.bindTexture(gl.TEXTURE_2D, textures[i]);
