@@ -2,50 +2,48 @@
 // u_Example = uniform variable (in shader)
 // a_Example = attribute (in shader)
 // exampleVariable = pointers to shader variables/attributes
-// exampleVar = local variable used to give values
+// exVar = local variable used to give values
 
+const VSHADER_SOURCE =
+  'attribute vec4 a_Position;\n' +
+  'attribute vec4 a_Normal;\n' +
+  'attribute vec2 a_TexCoord;\n' +
 
-const VSHADER_SOURCE = 
-    'attribute vec4 a_Position;\n' +
-    'attribute vec4 a_Colour;\n' +
-    'attribute vec2 a_TexCoord;\n' +
-    'attribute vec3 a_Normal;\n' +
+  'uniform mat4 u_ModelMatrix;\n' +
+  'uniform mat4 u_ProjMatrix;\n' +
+  'uniform mat4 u_ViewMatrix;\n' +
+  'uniform mat4 u_NormalMatrix;\n' +
+  
+  'varying highp vec3 v_Normal;\n' +
+  'varying highp vec2 v_TexCoord;\n' +
+  'varying highp vec3 v_Position;\n' +
+  
+  'void main() {\n' +
+  '   gl_Position = u_ProjMatrix * u_ModelMatrix * u_ViewMatrix * a_Position;\n' +
+  '   v_Position = vec3(u_ModelMatrix * a_Position);\n' +
+  '   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));\n' +
+  '   v_TexCoord = a_TexCoord;\n' +
+  '}\n';
 
-    'uniform mat4 u_ModelMatrix;\n' +
-    'uniform mat4 u_ProjMatrix;\n' +
-    'uniform mat4 u_ViewMatrix;\n' +
-    'uniform mat4 u_NormalMatrix;\n' +
-    'uniform highp vec3 u_LightDirection;\n' +
-    'uniform highp vec3 u_LightColour;\n' +
-    
-    'varying lowp vec4 u_Colour;\n' +
-    'varying highp vec2 u_TexCoord;\n' +
-    'varying highp vec3 u_Lighting;\n' +
+const FSHADER_SOURCE =
+  'uniform highp vec3 u_LightColour;\n' +     
+  'uniform highp vec3 u_LightPosition;\n' +  
+  'uniform highp vec3 u_AmbientLight;\n' +  
+  'uniform sampler2D u_Sampler;\n' +
 
-    'void main(){\n' +
-    '   gl_Position = u_ProjMatrix * u_ModelMatrix * u_ViewMatrix * a_Position;\n' +
-    '   u_Colour = a_Colour;\n' +
-    '   u_TexCoord = a_TexCoord;\n' +
+  'varying highp vec3 v_Normal;\n' +
+  'varying highp vec3 v_Position;\n' +
+  'varying highp vec2 v_TexCoord;\n' +
 
-    '   highp vec3 ambientLight = vec3(0.4, 0.4, 0.4);\n' +
-    '   highp vec4 normal = u_NormalMatrix * vec4(a_Normal, 1.0);\n' +
-    '   highp float nDotL = max(dot(normal.xyz, u_LightDirection), 0.0);\n' +
-    '   u_Lighting = ambientLight + (u_LightColour * nDotL);\n' +
-    '}\n';
-
-const FSHADER_SOURCE = 
-    'uniform sampler2D u_Sampler;\n' +
-
-    'varying lowp vec4 u_Colour;\n' +
-    'varying highp vec2 u_TexCoord;\n' +
-    'varying highp vec3 u_Lighting;\n' +
-
-    'void main(){\n' +
-    // '   gl_FragColor = u_Colour;\n' + // for colour surfaces
-    // '   gl_FragColor = texture2D(u_Sampler, u_TexCoord);\n' + // for texture surfaces
-    '   highp vec4 texColour = texture2D(u_Sampler, u_TexCoord);\n' +
-    '   gl_FragColor = vec4(u_Lighting*texColour.rgb, texColour.a);\n' +
-    '}\n';
+  'void main() {\n' +
+  '   highp vec3 normal = normalize(v_Normal);\n' +
+  '   highp vec3 lightDirection = normalize(u_LightPosition - v_Position);\n' +
+  '   highp float nDotL = max(dot(lightDirection, normal), 0.0);\n' +
+  '   highp vec4 TexColour = texture2D(u_Sampler, v_TexCoord);\n' +
+  '   highp vec3 diffuse = u_LightColour * TexColour.rgb * nDotL * 1.2;\n' +
+  '   highp vec3 ambient = u_AmbientLight * TexColour.rgb;\n' +
+  '   gl_FragColor = vec4(diffuse + ambient, TexColour.a);\n' +
+  '}\n';
 
 function main(){
     const canvas = document.getElementById('wglCanvas');
@@ -65,17 +63,17 @@ function main(){
         program: shaderProgram,
         attribLocations: {
             position: gl.getAttribLocation(shaderProgram, 'a_Position'),
-            colour: gl.getAttribLocation(shaderProgram, 'a_Colour'),
             texCoord: gl.getAttribLocation(shaderProgram, 'a_TexCoord'),
             normal: gl.getAttribLocation(shaderProgram, 'a_Normal'),
         },
         uniformLocations: {
-            projMatrix: gl.getUniformLocation(shaderProgram, 'u_ProjMatrix'),
             modelMatrix: gl.getUniformLocation(shaderProgram, 'u_ModelMatrix'),
+            projMatrix: gl.getUniformLocation(shaderProgram, 'u_ProjMatrix'),
             viewMatrix: gl.getUniformLocation(shaderProgram, 'u_ViewMatrix'),
-            sampler: gl.getUniformLocation(shaderProgram, 'u_Sampler'),
             normalMatrix: gl.getUniformLocation(shaderProgram, 'u_NormalMatrix'),
-            lightDirection: gl.getUniformLocation(shaderProgram, 'u_LightDirection'),
+            sampler: gl.getUniformLocation(shaderProgram, 'u_Sampler'),
+            lightPosition: gl.getUniformLocation(shaderProgram, 'u_LightPosition'),
+            ambientLight: gl.getUniformLocation(shaderProgram, 'u_AmbientLight'),
             lightColour: gl.getUniformLocation(shaderProgram, 'u_LightColour'),
         },
     }
@@ -109,6 +107,10 @@ function main(){
     const ceilingTex = loadTexture(gl, programInfo, 'ceiling.png');
     textures.push(ceilingTex);
 
+    const cordTex = loadTexture(gl, programInfo, 'lightshade.png');
+    for(let ct=0; ct<10; ct++){
+        textures.push(cordTex);
+    }
 
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
@@ -233,7 +235,7 @@ function loadTexture(gl, programInfo, url){
 function initBuffers(gl){
 
     //create an array of vertex positions (e.g. for a square)
-    const roomVertices = new Float32Array([
+    let roomVertices = new Float32Array([
         // floor
         0.0, 0.0, 0.0, //0
         7.5, 0.0, 0.0, //1
@@ -257,17 +259,61 @@ function initBuffers(gl){
         7.5, 4.0, 0.0, //13
         0.0, 4.0, 7.5, //14
         7.5, 4.0, 7.5, //15
+
+        // light cord side 1 (16-17-18-19)
+        3.72, 4.0, 3.77,    3.77, 4.0, 3.77,    3.72, 3.5, 3.77,    3.77, 3.5, 3.77,  
+        // cord side 2 (20-21-22-23)
+        3.77, 4.0, 3.77,    3.77, 4.0, 3.72,    3.77, 3.5, 3.77,    3.77, 3.5, 3.72,
+        // cord side 3 (24-25-26-27)
+        3.72, 4.0, 3.72,    3.77, 4.0, 3.72,    3.72, 3.5, 3.72,    3.77, 3.5, 3.72,    
+        // cord side 4 (28-29-30-31)
+        3.72, 4.0, 3.77,    3.72, 4.0, 3.72,    3.72, 3.5, 3.77,    3.72, 3.5, 3.72,  
+
+        // light shade top (32-33-34-35)
+        4.0,3.5,4.0,  3.5,3.5,4.0,  4.0,3.5,3.5,  3.5,3.5,3.5,
+        // shade side 1 (36-37-38-39)
+        4.0,3.5,4.0,  3.5,3.5,4.0,  4.0,3.0,4.0,  3.5,3.0,4.0,  
+        // shade side 2 (40-41-42-43)
+        4.0,3.5,4.0,  4.0,3.5,3.5,  4.0,3.0,4.0,  4.0,3.0,3.5,  
+        // shade side 3 (44-45-46-47)
+        3.5,3.5,4.0,  3.5,3.5,3.5,  3.5,3.0,4.0,  3.5,3.0,3.5,
+        // shade side 4 (48-49-50-51)
+        4.0,3.5,3.5,  3.5,3.5,3.5,  4.0,3.0,3.5,  3.5,3.0,3.5,  
+        // light shade bottom (52-53-54-55)
+        4.0,3.0,4.0,  3.5,3.0,4.0,  4.0,3.0,3.5,  3.5,3.0,3.5,
     ]);
 
-    //create buffer for vertices
-    //bind buffer operations to created one
-    //pass vertices to webGL by filling buffer with the array
-    const roomVertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, roomVertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, roomVertices, gl.STATIC_DRAW);
+    //triangle vertex index buffer
+    let roomIndices = new Uint16Array([
+        //floor background
+        0,1,2,  1,2,3,
+
+        //left wall
+        6,7,4,  7,4,5,
+        
+        //right wall
+        8,9,10,  9,10,11,
+        
+        //ceiling
+        12,13,14,  13,14,15,
+
+        //light cord
+        16,17,18,  17,18,19, //side 1
+        20,21,22,  21,22,23, //side 2
+        24,25,26,  25,26,27, //side 3
+        28,29,30,  29,30,31, //side 4
+
+        //light shade
+        32,33,34,  33,34,35, //top
+        36,37,38,  37,38,39, //side 1
+        40,41,42,  41,42,43, //side 2
+        44,45,46,  45,46,47, //side 3
+        48,49,50,  49,50,51, //side 4
+        52,53,54,  53,54,55, //bottom
+    ]);
 
     //normals buffer
-    const roomNormals = new Float32Array([
+    let roomNormals = new Float32Array([
         //floor background
         0.0, 1.0, 0.0,
         0.0, 1.0, 0.0,
@@ -291,46 +337,24 @@ function initBuffers(gl){
         0.0, -1.0, 0.0,
         0.0, -1.0, 0.0,
         0.0, -1.0, 0.0,
+
+        //light cord
+        0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, //side 1
+        1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0, //side 2
+        0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  //side 3
+        -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0, //side 4
+
+        //light shade
+        0.0,1.0,0.0,  0.0,1.0,0.0,  0.0,1.0,0.0,  0.0,1.0,0.0, //top
+        0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, //side 1
+        1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0, //side 2
+        0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  //side 3
+        -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0, //side 4
+        0.0,-1.0,0.0,  0.0,-1.0,0.0,  0.0,-1.0,0.0,  0.0,-1.0,0.0, //bottom
     ]);
-
-    const roomNormalsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, roomNormalsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, roomNormals, gl.STATIC_DRAW);
-
-    //create an array specifying the colour of each vertex
-    const roomColours = new Float32Array([
-        //floor background
-        0.9, 0.9, 0.9, 1.0,
-        0.9, 0.9, 0.9, 1.0,
-        0.9, 0.9, 0.9, 1.0,
-        0.9, 0.9, 0.9, 1.0,
-
-        //left wall
-        0.0, 1.0, 0.0, 1.0,
-        0.0, 1.0, 0.0, 1.0,
-        0.0, 1.0, 0.0, 1.0,
-        0.0, 1.0, 0.0, 1.0,
-
-        //right wall
-        0.0, 0.0, 1.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-        0.0, 0.0, 1.0, 1.0,
-
-        //ceiling
-        0.9, 0.9, 0.9, 1.0,
-        0.9, 0.9, 0.9, 1.0,
-        0.9, 0.9, 0.9, 1.0,
-        0.9, 0.9, 0.9, 1.0,
-    ]);
-
-    //pass this colour data into a colour buffer
-    const roomColourBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, roomColourBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, roomColours, gl.STATIC_DRAW);
 
     //texture buffer
-    const texCoordinates = new Float32Array([
+    let texCoordinates = new Float32Array([
         // Floor
         0.0,  0.0,
         0.0,  1.0,
@@ -354,35 +378,45 @@ function initBuffers(gl){
         1.0,  0.0,
         0.0,  1.0,
         1.0,  1.0,
-    ]);
-    
-    const texCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, texCoordinates, gl.STATIC_DRAW);
 
-    //triangle vertex index buffer
-    const roomIndices = new Uint16Array([
-        //floor background
-        0,1,2,  1,2,3,
+        // Light cord
+        0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 1
+        0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 2
+        0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 3
+        0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 4
 
-        //left wall
-        6,7,4,  7,4,5,
-        
-        //right wall
-        8,9,10,  9,10,11,
-        
-        //ceiling
-        12,13,14,  13,14,15,
+        // Light shade
+        1.0,1.0,  0.0,1.0,  1.0,0.0, 0.0,0.0, //top
+        1.0,1.0,  0.0,1.0,  1.0,0.0, 0.0,0.0, //side 1
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, //side 2
+        1.0,1.0,  0.0,1.0,  1.0,0.0,  0.0,0.0, //side 3
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, //side 4
+        1.0,1.0,  0.0,1.0,  1.0,0.0,  0.0,0.0, //bottom
     ]);
 
+    // Create buffer for vertices
+    const roomVertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, roomVertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, roomVertices, gl.STATIC_DRAW);
+
+    // Create buffer for indices
     const roomIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, roomIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, roomIndices, gl.STATIC_DRAW);
 
+    // Create buffer for normals
+    const roomNormalsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, roomNormalsBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, roomNormals, gl.STATIC_DRAW);
+
+    // Create buffer for texture coordinates
+    const texCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, texCoordinates, gl.STATIC_DRAW);
+
     //return initialised buffer object
     return {
         roomPosition: roomVertexBuffer,
-        roomColour: roomColourBuffer,
         roomNormal: roomNormalsBuffer,
         roomIndices: roomIndexBuffer,
         texCoord: texCoordBuffer,
@@ -442,37 +476,17 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
         gl.enableVertexAttribArray(programInfo.attribLocations.position);
     }
 
-    //tell webGL how to extract vertex colours from buffer in the same manner
-    {
-        const n = 4;
-        const type = gl.FLOAT;
-        const normalise = false;
-        const stride = 0;
-        const offset = 0;
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.roomColour);
-        gl.vertexAttribPointer(
-            programInfo.attribLocations.colour,
-            n,
-            type,
-            normalise,
-            stride,
-            offset
-        );
-        gl.enableVertexAttribArray(programInfo.attribLocations.colour);
-    }
-
     // tell webgl how to pull out the texture coordinates from buffer
     {
-        const num = 2; // every coordinate composed of 2 values
-        const type = gl.FLOAT; // the data in the buffer is 32 bit float
-        const normalize = false; // don't normalize
-        const stride = 0; // how many bytes to get from one set to the next
-        const offset = 0; // how many bytes inside the buffer to start from
+        const n = 2;
+        const type = gl.FLOAT;
+        const normalize = false;
+        const stride = 0;
+        const offset = 0;
         gl.bindBuffer(gl.ARRAY_BUFFER, buffers.texCoord);
         gl.vertexAttribPointer(
             programInfo.attribLocations.texCoord, 
-            num, 
+            n, 
             type, 
             normalize, 
             stride, 
@@ -502,24 +516,26 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.roomIndices);
 
-    //set light colour and direction
+    //set light parameters
+    const ambLight = new Vector3([0.2, 0.2, 0.2]);
     const lightCol = new Vector3([1.0, 1.0, 1.0]);
-    const lightDir = new Vector3([0.85, 0.8, 0.75]);
-    lightDir.normalize();
+    const lightPos = new Vector3([3.75, 3.25, 3.75]);
 
     //set shader uniforms
     gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMat.elements);
-    gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
-    gl.uniform3fv(programInfo.uniformLocations.lightDirection, lightDir.elements);
 
-    const ntex = 4;
+    gl.uniform3fv(programInfo.uniformLocations.ambientLight, ambLight.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightPos.elements);
+
+    // ntex = number of textures = one for each room side (4) + one for each light cord side (4) + one for each side of the light shade (6)
+    const ntex = 4+4+5;
     for(let i=0; i<ntex; i++){
 
         gl.bindTexture(gl.TEXTURE_2D, textures[i]);
-
         {
             const v = 6;
             const type = gl.UNSIGNED_SHORT;
@@ -532,17 +548,4 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
             );
         }
     }
-
-    // //draw arrays
-    // {
-    //     const v = 24;
-    //     const type = gl.UNSIGNED_SHORT;
-    //     const offset = 0;
-    //     gl.drawElements(
-    //         gl.TRIANGLES, 
-    //         v, 
-    //         type, 
-    //         offset
-    //     );
-    // }
 }
