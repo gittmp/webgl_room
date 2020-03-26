@@ -110,7 +110,17 @@ function main(){
     const cordTex = loadTexture(gl, programInfo, 'lightshade.png');
     for(let ct=0; ct<10; ct++){
         textures.push(cordTex);
-    }
+    };
+
+    const sofaTex = loadTexture(gl, programInfo, 'sofa.jpg');
+    for(let st=0; st<24; st++){
+        textures.push(sofaTex);
+    };
+
+    const woodTex = loadTexture(gl, programInfo, 'wood.jpeg');
+    for(let st=0; st<24; st++){
+        textures.push(woodTex);
+    };
 
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
@@ -231,160 +241,238 @@ function loadTexture(gl, programInfo, url){
     return texture;
 }
 
-//initiate a buffer to hold vertex positions
+// Vertex position buffer data
 function initBuffers(gl){
 
-    //create an array of vertex positions (e.g. for a square)
-    let roomVertices = new Float32Array([
-        // floor
-        0.0, 0.0, 0.0, //0
-        7.5, 0.0, 0.0, //1
-        0.0, 0.0, 7.5, //2
-        7.5, 0.0, 7.5, //3
+    // Vertex position buffer data
+    let roomVerts = [
+        0.0,0.0,0.0,  7.5,0.0,0.0,  0.0,0.0,7.5,  7.5,0.0,7.5, // Floor (0-1-2-3)
+        0.0,4.0,0.0,  0.0,4.0,7.5,  0.0,0.0,0.0,  0.0,0.0,7.5, // Left wall (4-5-6-7)
+        0.0,0.0,0.0,  7.5,0.0,0.0,  0.0,4.0,0.0,  7.5,4.0,0.0, // Right wall (8-9-10-11)
+        0.0,4.0,0.0,   7.5,4.0,0.0,   0.0,4.0,7.5,  7.5,4.0,7.5, // Ceiling (12-13-14-15)
+    ];
 
-        // left wall
-        0.0, 4.0, 0.0, //4
-        0.0, 4.0, 7.5, //5
-        0.0, 0.0, 0.0, //6
-        0.0, 0.0, 7.5, //7
+    let lightCordVerts = [
+        3.72,4.0,3.77,  3.77,4.0,3.77,  3.72,3.5,3.77,  3.77,3.5,3.77, // Side 1 (16-17-18-19)        
+        3.77,4.0,3.77,  3.77,4.0,3.72,  3.77,3.5,3.77,  3.77,3.5,3.72, // Side 2 (20-21-22-23)      
+        3.72,4.0,3.72,  3.77,4.0,3.72,  3.72,3.5,3.72,  3.77,3.5,3.72, // Side 3 (24-25-26-27)    
+        3.72,4.0,3.77,  3.72,4.0,3.72,  3.72,3.5,3.77,  3.72,3.5,3.72, // Side 4 (28-29-30-31)
+    ];
 
-        // right wall
-        0.0, 0.0, 0.0, //8
-        7.5, 0.0, 0.0, //9
-        0.0, 4.0, 0.0, //10
-        7.5, 4.0, 0.0, //11
+    let lightShadeVerts = [
+        4.0,3.5,4.0,  3.5,3.5,4.0,  4.0,3.5,3.5,  3.5,3.5,3.5, // Top (32-33-34-35)
+        4.0,3.5,4.0,  3.5,3.5,4.0,  4.0,3.0,4.0,  3.5,3.0,4.0, // Side 1 (36-37-38-39)
+        4.0,3.5,4.0,  4.0,3.5,3.5,  4.0,3.0,4.0,  4.0,3.0,3.5, // Side 2 (40-41-42-43)
+        3.5,3.5,4.0,  3.5,3.5,3.5,  3.5,3.0,4.0,  3.5,3.0,3.5, // Side 3 (44-45-46-47)
+        4.0,3.5,3.5,  3.5,3.5,3.5,  4.0,3.0,3.5,  3.5,3.0,3.5, // Side 4 (48-49-50-51)
+        4.0,3.0,4.0,  3.5,3.0,4.0,  4.0,3.0,3.5,  3.5,3.0,3.5, // Bottom (52-53-54-55)
+    ];
 
-        // ceiling
-        0.0, 4.0, 0.0, //12
-        7.5, 4.0, 0.0, //13
-        0.0, 4.0, 7.5, //14
-        7.5, 4.0, 7.5, //15
+    let sofaVerts = [
+        // Back
+        0.0,1.5,6.0,  0.3,1.5,6.0,  0.0,0.25,6.0,  0.3,0.25,6.0,  // Front set (56-57-58-59)
+        0.0,1.5,3.0,  0.3,1.5,3.0,  0.0,0.25,3.0,  0.3,0.25,3.0,  // Back set (60-61-62-63)
 
-        // light cord side 1 (16-17-18-19)
-        3.72, 4.0, 3.77,    3.77, 4.0, 3.77,    3.72, 3.5, 3.77,    3.77, 3.5, 3.77,  
-        // cord side 2 (20-21-22-23)
-        3.77, 4.0, 3.77,    3.77, 4.0, 3.72,    3.77, 3.5, 3.77,    3.77, 3.5, 3.72,
-        // cord side 3 (24-25-26-27)
-        3.72, 4.0, 3.72,    3.77, 4.0, 3.72,    3.72, 3.5, 3.72,    3.77, 3.5, 3.72,    
-        // cord side 4 (28-29-30-31)
-        3.72, 4.0, 3.77,    3.72, 4.0, 3.72,    3.72, 3.5, 3.77,    3.72, 3.5, 3.72,  
+        // Left arm
+        0.3,1.1,6.0,  1.0,1.1,6.0,  0.3,0.25,6.0,  1.0,0.25,6.0, // Front set (64-65-66-67)
+        0.3,1.1,5.7,  1.0,1.1,5.7,  0.3,0.25,5.7,  1.0,0.25,5.7, // Back set (68-69-70-71)
 
-        // light shade top (32-33-34-35)
-        4.0,3.5,4.0,  3.5,3.5,4.0,  4.0,3.5,3.5,  3.5,3.5,3.5,
-        // shade side 1 (36-37-38-39)
-        4.0,3.5,4.0,  3.5,3.5,4.0,  4.0,3.0,4.0,  3.5,3.0,4.0,  
-        // shade side 2 (40-41-42-43)
-        4.0,3.5,4.0,  4.0,3.5,3.5,  4.0,3.0,4.0,  4.0,3.0,3.5,  
-        // shade side 3 (44-45-46-47)
-        3.5,3.5,4.0,  3.5,3.5,3.5,  3.5,3.0,4.0,  3.5,3.0,3.5,
-        // shade side 4 (48-49-50-51)
-        4.0,3.5,3.5,  3.5,3.5,3.5,  4.0,3.0,3.5,  3.5,3.0,3.5,  
-        // light shade bottom (52-53-54-55)
-        4.0,3.0,4.0,  3.5,3.0,4.0,  4.0,3.0,3.5,  3.5,3.0,3.5,
-    ]);
+        // Right arm
+        0.3,1.1,3.3,  1.0,1.1,3.3,  0.3,0.25,3.3,  1.0,0.25,3.3, // Front set (72-73-74-75)
+        0.3,1.1,3.0,  1.0,1.1,3.0,  0.3,0.25,3.0,  1.0,0.25,3.0, // Back set (76-77-78-79)
 
-    //triangle vertex index buffer
-    let roomIndices = new Uint16Array([
-        //floor background
-        0,1,2,  1,2,3,
+        // Seat
+        0.3,0.55,5.7,  1.0,0.55,5.7,  0.3,0.25,5.7,  1.0,0.25,5.7, // Front set (80-81-82-83)
+        0.3,0.55,3.3,  1.0,0.55,3.3,  0.3,0.25,3.3,  1.0,0.25,3.3, // Back set (84-85-86-87)
 
-        //left wall
-        6,7,4,  7,4,5,
-        
-        //right wall
-        8,9,10,  9,10,11,
-        
-        //ceiling
-        12,13,14,  13,14,15,
+        // Leg 1
+        0.0,0.25,6.0,  0.2,0.25,6.0,  0.0,0.0,6.0,  0.2,0.0,6.0, // Front set (88-89-90-91)
+        0.0,0.25,5.8,  0.2,0.25,5.8,  0.0,0.0,5.8,  0.2,0.0,5.8, // Back set (92-93-94-95)
+   
+        // Leg 2
+        0.8,0.25,6.0,  1.0,0.25,6.0,  0.8,0.0,6.0,  1.0,0.0,6.0, // Front set (96-97-98-99)
+        0.8,0.25,5.8,  1.0,0.25,5.8,  0.8,0.0,5.8,  1.0,0.0,5.8, // Back set (100-101-102-103)
 
-        //light cord
+        // Leg 3
+        0.8,0.25,3.2,  1.0,0.25,3.2,  0.8,0.0,3.2,  1.0,0.0,3.2, // Front set (104-105-106-107)
+        0.8,0.25,3.0,  1.0,0.25,3.0,  0.8,0.0,3.0,  1.0,0.0,3.0, // Back set (108-109-110-111)
+
+        // Leg 4
+        0.0,0.25,3.2,  0.2,0.25,3.2,  0.0,0.0,3.2,  0.2,0.0,3.2, // Front set (112-113-114-115)
+        0.0,0.25,3.0,  0.2,0.25,3.0,  0.0,0.0,3.0,  0.2,0.0,3.0, // Back set (116-117-118-119)
+    ];
+
+    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts));
+
+    // Triangle vertex index buffer data
+    let roomIndices = [
+        0,1,2,  1,2,3, //floor
+        6,7,4,  7,4,5, //left wall
+        8,9,10,  9,10,11, //right wall
+        12,13,14,  13,14,15, //ceiling
+    ];
+
+    let lightCordIndices = [
         16,17,18,  17,18,19, //side 1
         20,21,22,  21,22,23, //side 2
         24,25,26,  25,26,27, //side 3
         28,29,30,  29,30,31, //side 4
+    ];
 
-        //light shade
+    let lightShadeIndices = [
         32,33,34,  33,34,35, //top
         36,37,38,  37,38,39, //side 1
         40,41,42,  41,42,43, //side 2
         44,45,46,  45,46,47, //side 3
         48,49,50,  49,50,51, //side 4
         52,53,54,  53,54,55, //bottom
-    ]);
+    ];
 
-    //normals buffer
-    let roomNormals = new Float32Array([
-        //floor background
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
+    let sofaIndices = [
+        // Back
+        56,57,58,  57,58,59, // Front side
+        57,63,59,  57,63,61, // Side 1
+        56,61,57,  56,61,60, // Side 2
+        56,58,60,  58,60,62, // Side 3
+        58,59,62,  59,62,63, // Side 4
+        60,61,62,  61,62,63, // Back side
 
-        //left wall
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
+        // Left arm
+        64,65,66,  65,66,67, // Front side
+        65,71,67,  65,71,69, // Side 1
+        64,69,65,  64,69,68, // Side 2
+        64,66,68,  66,68,70, // Side 3
+        66,67,70,  67,70,71, // Side 4
+        68,69,70,  69,70,71, // Back side
 
-        //right wall
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
+        // Right arm
+        72,73,74,  73,74,75, // Front side
+        73,79,75,  73,79,77, // Side 1
+        72,77,73,  72,77,76, // Side 2
+        72,74,76,  74,76,78, // Side 3
+        74,75,78,  75,78,79, // Side 4
+        76,77,78,  77,78,79, // Back side 
+        
+        // Seat
+        80,81,82,  81,82,83, // Front side
+        81,87,83,  81,87,85, // Side 1
+        80,85,81,  80,85,84, // Side 2
+        80,82,84,  82,84,86, // Side 3
+        82,83,86,  83,86,87, // Side 4
+        84,85,86,  85,86,87, // Back side 
 
-        //ceiling
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
+        // Leg 1
+        88,89,90,  89,90,91, // Front side
+        89,95,91,  89,95,93, // Side 1
+        88,93,89,  88,93,92, // Side 2
+        88,90,92,  90,92,94, // Side 3
+        90,91,94,  91,94,95, // Side 4
+        92,93,94,  93,94,95, // Back side 
 
-        //light cord
+        // Leg 2
+        96,97,98,  97,98,99, // Front side
+        97,103,99,  97,103,101, // Side 1
+        96,101,97,  96,101,100, // Side 2
+        96,98,100,  98,100,102, // Side 3
+        98,99,102,  99,102,103, // Side 4
+        100,101,102,  101,102,103, // Back side 
+
+        // Leg 3
+        104,105,106,  105,106,107, // Front side
+        105,111,107,  105,111,109, // Side 1
+        104,109,105,  104,109,108, // Side 2
+        104,106,108,  106,108,110, // Side 3
+        106,107,110,  107,110,111, // Side 4
+        108,109,110,  109,110,111, // Back side 
+
+        // Leg 4
+        112,113,114,  113,114,115, // Front side
+        113,119,115,  113,119,117, // Side 1
+        112,117,113,  112,117,116, // Side 2
+        112,114,116,  114,116,118, // Side 3
+        114,115,118,  115,118,119, // Side 4
+        116,117,118,  117,118,119, // Back side 
+    ];
+
+    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices));
+
+    // Normals buffer data
+    let roomNormals = [
+        0.0,1.0,0.0,  0.0,1.0,0.0,  0.0,1.0,0.0,  0.0,1.0,0.0, // Floor
+        1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0, // Left wall
+        -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0, // Right wall
+        0.0,-1.0,0.0,  0.0,-1.0,0.0,  0.0,-1.0,0.0,  0.0,-1.0,0.0, // Ceiling
+    ];
+
+    let lightCordNormals = [
         0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, //side 1
         1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0, //side 2
         0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  //side 3
         -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0, //side 4
+    ];
 
-        //light shade
+    let lightShadeNormals = [
         0.0,1.0,0.0,  0.0,1.0,0.0,  0.0,1.0,0.0,  0.0,1.0,0.0, //top
         0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, //side 1
         1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0,  1.0,0.0,0.0, //side 2
         0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  0.0,0.0,-1.0,  //side 3
         -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0,  -1.0,0.0,0.0, //side 4
         0.0,-1.0,0.0,  0.0,-1.0,0.0,  0.0,-1.0,0.0,  0.0,-1.0,0.0, //bottom
-    ]);
+    ];
 
-    //texture buffer
-    let texCoordinates = new Float32Array([
-        // Floor
-        0.0,  0.0,
-        0.0,  1.0,
-        1.0,  0.0,
-        1.0,  1.0,
+    let sofaNormals = [
+        // Back
+        0.0,1.0,1.0,  1.0,1.0,1.0,  0.0,-1.0,1.0,  1.0,-1.0,1.0,  // Front set
+        0.0,1.0,-1.0,  1.0,1.0,-1.0,  0.0,-1.0,-1.0,  1.0,-1.0,-1.0,  //Back set
 
-        // Left Wall
-        1.0,  0.0,
-        0.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0,
+        // Left arm
+        0.0,1.0,1.0,  1.0,1.0,1.0,  0.0,-1.0,1.0,  1.0,-1.0,1.0,  // Front set
+        0.0,1.0,-1.0,  1.0,1.0,-1.0,  0.0,-1.0,-1.0,  1.0,-1.0,-1.0,  //Back set
 
-        // Right Wall
-        0.5,  1.0,
-        1.0,  1.0,
-        0.5,  0.5,
-        1.0,  0.5,
+        // Right arm
+        0.0,1.0,1.0,  1.0,1.0,1.0,  0.0,-1.0,1.0,  1.0,-1.0,1.0,  // Front set
+        0.0,1.0,-1.0,  1.0,1.0,-1.0,  0.0,-1.0,-1.0,  1.0,-1.0,-1.0,  //Back set
 
-        // Ceiling
-        0.0,  0.0,
-        1.0,  0.0,
-        0.0,  1.0,
-        1.0,  1.0,
+        // Seat
+        1.0,1.0,-1.0,  0.0,1.0,-1.0,  0.0,1.0,-1.0,  1.0,-1.0,0.0,  // Front set
+        1.0,1.0,1.0,  1.0,1.0,1.0,  0.0,-1.0,0.0,  1.0,-1.0,0.0,  // Back set
 
+        // Leg 1
+        -1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,  // Front set
+        -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  // Back set
+
+        // Leg 2
+        -1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,  // Front set
+        -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  // Back set
+
+        // Leg 3
+        -1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,  // Front set
+        -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  // Back set
+
+        // Leg 4
+        -1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,  // Front set
+        -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  // Back set
+    ];
+
+    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals));
+
+    // Texture coordinates buffer data
+    let roomTex = [
+        0.0,0.0,  0.0,1.0,  1.0,0.0,  1.0,1.0, // Floor
+        1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Left Wall
+        0.5,1.0,  1.0,1.0,  0.5,0.5,  1.0,0.5, // Right Wall
+        0.0,0.0,  1.0,0.0,  0.0,1.0,  1.0,1.0, // Ceiling
+    ];
+
+    let lightCordTex = [
         // Light cord
         0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 1
         0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 2
         0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 3
         0.0,0.0,  1.0,0.0,  0.0,0.1,  1.0,1.0,  //side 4
+    ];
 
+    let lightShadeTex = [
         // Light shade
         1.0,1.0,  0.0,1.0,  1.0,0.0, 0.0,0.0, //top
         1.0,1.0,  0.0,1.0,  1.0,0.0, 0.0,0.0, //side 1
@@ -392,38 +480,74 @@ function initBuffers(gl){
         1.0,1.0,  0.0,1.0,  1.0,0.0,  0.0,0.0, //side 3
         0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, //side 4
         1.0,1.0,  0.0,1.0,  1.0,0.0,  0.0,0.0, //bottom
-    ]);
+    ];
 
-    // Create buffer for vertices
-    const roomVertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, roomVertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, roomVertices, gl.STATIC_DRAW);
+    let sofaTex = [
+        // Back
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
 
-    // Create buffer for indices
-    const roomIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, roomIndexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, roomIndices, gl.STATIC_DRAW);
+        // Left arm
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
 
-    // Create buffer for normals
-    const roomNormalsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, roomNormalsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, roomNormals, gl.STATIC_DRAW);
+        // Right arm
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
 
-    // Create buffer for texture coordinates
+        // Seat
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
+
+        // Leg 1
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
+
+        // Leg 2
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
+
+        // Leg 3
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
+
+        // Leg 4
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
+    ];
+
+    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex));
+
+    // Form buffer for vertices
+    const vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    // Form buffer for indices
+    const indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+    // Form buffer for normals
+    const normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+
+    // Form buffer for texture coordinates
     const texCoordBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, texCoordinates, gl.STATIC_DRAW);
 
-    //return initialised buffer object
+    // Return initialised buffers
     return {
-        roomPosition: roomVertexBuffer,
-        roomNormal: roomNormalsBuffer,
-        roomIndices: roomIndexBuffer,
+        roomPosition: vertexBuffer,
+        roomNormal: normalBuffer,
+        indices: indexBuffer,
         texCoord: texCoordBuffer,
     };
 }
 
-//rendering the scene
+// Rendering the scene to canvas
 function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
@@ -514,14 +638,14 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
         gl.enableVertexAttribArray(programInfo.attribLocations.normal);
     }
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.roomIndices);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
-    //set light parameters
+    // Set light parameters
     const ambLight = new Vector3([0.2, 0.2, 0.2]);
     const lightCol = new Vector3([1.0, 1.0, 1.0]);
     const lightPos = new Vector3([3.75, 3.25, 3.75]);
 
-    //set shader uniforms
+    // Set shader uniforms
     gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMat.elements);
@@ -531,8 +655,8 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
     gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
     gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightPos.elements);
 
-    // ntex = number of textures = one for each room side (4) + one for each light cord side (4) + one for each side of the light shade (6)
-    const ntex = 4+4+5;
+    // ntex = number of textures = 4 room sides + 4 light cord sides + 6 light shade sides + 16 sofa surfaces
+    const ntex = 4+4+6+48;
     for(let i=0; i<ntex; i++){
 
         gl.bindTexture(gl.TEXTURE_2D, textures[i]);
