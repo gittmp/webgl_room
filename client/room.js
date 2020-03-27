@@ -101,59 +101,75 @@ function main(){
                     [1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
     };
 
+    let tvParams = {
+        channel: 0,
+        switch: [
+            loadTexture(gl, programInfo, 'content/static.jpg'),
+            loadTexture(gl, programInfo, 'content/gru.jpg'),
+            loadTexture(gl, programInfo, 'content/simpsons.jpg'),
+            loadTexture(gl, programInfo, 'content/yoda.jpg'),
+        ],
+    };
+
     //initialise vertex buffer
     const buffers = initBuffers(gl);
 
     // Load textures into texture array
-    let textures = new Array();
-
-    const floorTex = loadTexture(gl, programInfo, 'floor.png');
-    textures.push(floorTex);
-
-    const wall1Tex = loadTexture(gl, programInfo, 'wall1.png');
-    textures.push(wall1Tex);
-
-    const wall2Tex = loadTexture(gl, programInfo, 'wallpaper.jpg');
-    textures.push(wall2Tex);
-
-    const ceilingTex = loadTexture(gl, programInfo, 'ceiling.png');
-    textures.push(ceilingTex);
-
-    const cordTex = loadTexture(gl, programInfo, 'lightshade.png');
-    for(let ct=0; ct<10; ct++){
-        textures.push(cordTex);
-    };
-
-    const sofaTex = loadTexture(gl, programInfo, 'sofa.jpg');
-    for(let st=0; st<24; st++){
-        textures.push(sofaTex);
-    };
-
-    const woodTex = loadTexture(gl, programInfo, 'wood.jpeg');
-    for(let st=0; st<24; st++){
-        textures.push(woodTex);
-    };
+    let textures = initTexArray(gl, programInfo);
 
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
 
     // function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, textures);
+        draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, tvParams, textures);
         requestAnimationFrame(render);
     }
 
     // moving camera on keypress
     document.onkeydown = function(ev){
-        keypress(ev, lookAtParams, lightParams);
+        keypress(ev, lookAtParams, lightParams, tvParams);
     };
 
     // rendering initial scene
     requestAnimationFrame(render);
 }
 
+function initTexArray(gl, programInfo){
+    let textures = new Array();
+
+    const floorTex = loadTexture(gl, programInfo, 'content/floor.png');
+    textures.push(["floor", floorTex]);
+
+    const wall1Tex = loadTexture(gl, programInfo, 'content/wall1.png');
+    textures.push(["wall1", wall1Tex]);
+
+    const wall2Tex = loadTexture(gl, programInfo, 'content/wallpaper.jpg');
+    textures.push(["wall2", wall2Tex]);
+
+    const ceilingTex = loadTexture(gl, programInfo, 'content/ceiling.png');
+    textures.push(["ceiling", ceilingTex]);
+
+    const lightTex = loadTexture(gl, programInfo, 'content/lightshade.png');
+    textures.push(["light", lightTex]);
+
+    const sofaTex = loadTexture(gl, programInfo, 'content/sofa.jpg');
+    textures.push(["sofa", sofaTex]);
+
+    const woodTex = loadTexture(gl, programInfo, 'content/wood.jpeg');
+    textures.push(["wood", woodTex]);
+
+    const borderTex = loadTexture(gl, programInfo, 'content/border.jpg');
+    textures.push(["border", borderTex]);
+
+    const staticTex = loadTexture(gl, programInfo, 'content/static.jpg');
+    textures.push(["channel", staticTex]);
+
+    return textures;
+}
+
 //function to move camera when key pressed
-function keypress(ev, lookAtParams, lightParams){
+function keypress(ev, lookAtParams, lightParams, tvParams){
     switch (ev.keyCode) {
         case 38: //up arrow
             lookAtParams.ly += lookAtParams.step;
@@ -167,7 +183,6 @@ function keypress(ev, lookAtParams, lightParams){
         case 37: //left arrow
             lookAtParams.lx -= lookAtParams.step;
             break;
-
         case 87: //w - increase up y axes
             lookAtParams.ey += lookAtParams.step;
             break;
@@ -185,8 +200,22 @@ function keypress(ev, lookAtParams, lightParams){
             break;
         case 90: //x - increase z axes
             lookAtParams.ez += lookAtParams.step;
+            break;
         case 80: //p - party mode
             lightParams.partyOn = !lightParams.partyOn;
+            break;
+        case 49: //1 - tv channel 1
+            tvParams.channel = 0;
+            break;
+        case 50: //2 - tv channel 2
+            tvParams.channel = 1;
+            break;
+        case 51: //3 - tv channel 3
+            tvParams.channel = 2;
+            break;
+        case 52: //4 - tv channel 4
+            tvParams.channel = 3;
+            break;
         default:
             break;
     }
@@ -315,7 +344,13 @@ function initBuffers(gl){
         0.0,0.25,1.0,  0.2,0.25,1.0,  0.0,0.0,1.0,  0.2,0.0,1.0, // Back set (116-117-118-119)
     ];
 
-    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts));
+    let tvVerts = [
+        1.8,2.4,0.1,  3.5,2.4,0.1,  1.8,1.3,0.1,  3.5,1.3,0.1, // Front set (120-121-122-123)
+        1.8,2.4,0.0,  3.5,2.4,0.0,  1.8,1.3,0.0,  3.5,1.3,0.0,  // Back set (124-125-126-127)
+        1.9,2.3,0.1001,  3.4,2.3,0.1001,  1.9,1.4,0.1001,  3.4,1.4,0.1001, // Screen (128-129-130-131)
+    ];
+
+    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts));
 
     // Triangle vertex index buffer data
     let roomIndices = [
@@ -407,7 +442,17 @@ function initBuffers(gl){
         116,117,118,  117,118,119, // Back side 
     ];
 
-    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices));
+    let tvIndices = [
+        120,121,122,  121,122,123, // Front
+        120,121,124,  121,124,125, // Top
+        124,120,126,  120,126,122, // Left
+        123,122,127,  122,127,126, // Bottom
+        123,121,127,  121,127,125, // Right
+        124,125,126,  125,126,127, // Back
+        128,129,130,  129,130,131, // Screen
+    ];
+
+    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices));
 
     // Normals buffer data
     let roomNormals = [
@@ -467,7 +512,13 @@ function initBuffers(gl){
         -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  // Back set
     ];
 
-    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals));
+    let tvNormals = [
+        -1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,-1.0,1.0,  1.0,-1.0,1.0, // Front set
+        -1.0,1.0,0.0,  1.0,1.0,0.0,  -1.0,-1.0,0.0,  1.0,-1.0,0.0, // Back set
+        0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, // Screen
+    ];
+
+    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals));
 
     // Texture coordinates buffer data
     let roomTex = [
@@ -529,7 +580,13 @@ function initBuffers(gl){
         0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
     ];
 
-    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex));
+    let tvTex = [
+        1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Front set
+        1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Back set
+        0.0,0.0,  1.0,0.0,  0.0,1.0,  1.0,1.0, // Screen
+    ];
+
+    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex));
 
     // Form buffer for vertices
     const vertexBuffer = gl.createBuffer();
@@ -561,7 +618,7 @@ function initBuffers(gl){
 }
 
 // Rendering the scene to canvas
-function draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, textures){
+function draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, tvParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -671,20 +728,57 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, textu
     gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightParams.position.elements);
 
     // ntex = number of textures = 4 room sides + 4 light cord sides + 6 light shade sides + 16 sofa surfaces
-    const ntex = 4+4+6+48;
+    const ntex = 9;
+    let k = 0;
     for(let i=0; i<ntex; i++){
-
-        gl.bindTexture(gl.TEXTURE_2D, textures[i]);
-        {
-            const v = 6;
-            const type = gl.UNSIGNED_SHORT;
-            const offset = 2*i*6;
-            gl.drawElements(
-                gl.TRIANGLES, 
-                v, 
-                type, 
-                offset
-            );
+        let index = 1;
+        switch (textures[i][0]) {
+            case 'floor': 
+                index = 1;
+                break;
+            case 'wall1': 
+                index = 1;
+                break;
+            case 'wall2': 
+                index = 1;
+                break;
+            case 'ceiling': 
+                index = 1;
+                break;
+            case 'light': 
+                index = 10;
+                break;
+            case 'sofa': 
+                index = 24;
+                break;
+            case 'wood': 
+                index = 24;
+                break;
+            case 'border': 
+                index = 6;
+                break;
+            case 'channel': 
+                index = 1;
+                textures[i][1] = tvParams.switch[[tvParams.channel]];
+                break;
+            default:
+                break;
         }
-    }
+
+        for(let j=0; j<index; j++){
+            gl.bindTexture(gl.TEXTURE_2D, textures[i][1]);
+            {
+                const v = 6;
+                const type = gl.UNSIGNED_SHORT;
+                const offset = 2*(k)*6;
+                gl.drawElements(
+                    gl.TRIANGLES, 
+                    v, 
+                    type, 
+                    offset
+                );
+            }
+            k++;
+        };
+    };
 }
