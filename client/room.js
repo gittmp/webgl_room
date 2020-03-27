@@ -80,29 +80,41 @@ function main(){
 
     gl.useProgram(programInfo.program);
 
-    //initialise camera move parameters
-    var lookAtParams = {
-        step: 0.1,
+    // Initialise camera position parameters
+    let lookAtParams = {
+        step: 0.2,
         ex: 10.0,
         ey: 3.1,
         ez: 10.0,
         lx: 0.0,
         ly: 0.5,
         lz: 0.0,    
-    }
+    };
+
+    // Initialise light parameters
+    let lightParams = {
+        ambient: new Vector3([0.2, 0.2, 0.2]),
+        colour: new Vector3([1.0, 1.0, 1.0]),
+        position: new Vector3([3.75, 3.25, 3.75]),
+        partyOn: false,
+        partyCols: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
+                    [1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
+    };
 
     //initialise vertex buffer
     const buffers = initBuffers(gl);
 
-    //load textures into texture array
+    // Load textures into texture array
     let textures = new Array();
 
     const floorTex = loadTexture(gl, programInfo, 'floor.png');
     textures.push(floorTex);
 
-    const wallTex = loadTexture(gl, programInfo, 'wall1.png');
-    textures.push(wallTex);
-    textures.push(wallTex);
+    const wall1Tex = loadTexture(gl, programInfo, 'wall1.png');
+    textures.push(wall1Tex);
+
+    const wall2Tex = loadTexture(gl, programInfo, 'wallpaper.jpg');
+    textures.push(wall2Tex);
 
     const ceilingTex = loadTexture(gl, programInfo, 'ceiling.png');
     textures.push(ceilingTex);
@@ -127,13 +139,13 @@ function main(){
 
     // function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, buffers, lookAtParams, textures);
+        draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, textures);
         requestAnimationFrame(render);
     }
 
     // moving camera on keypress
     document.onkeydown = function(ev){
-        keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtParams, textures);
+        keypress(ev, lookAtParams, lightParams);
     };
 
     // rendering initial scene
@@ -141,7 +153,7 @@ function main(){
 }
 
 //function to move camera when key pressed
-function keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtParams, textures){
+function keypress(ev, lookAtParams, lightParams){
     switch (ev.keyCode) {
         case 38: //up arrow
             lookAtParams.ly += lookAtParams.step;
@@ -173,13 +185,14 @@ function keypress(ev, lookAtParams, gl, canvas, programInfo, buffers, lookAtPara
             break;
         case 90: //x - increase z axes
             lookAtParams.ez += lookAtParams.step;
+        case 80: //p - party mode
+            lightParams.partyOn = !lightParams.partyOn;
         default:
             break;
     }
 
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
-    draw(gl, canvas, programInfo, buffers, lookAtParams, textures);
 }
 
 //function to determine if dimentions of texture are of power 2
@@ -270,36 +283,36 @@ function initBuffers(gl){
 
     let sofaVerts = [
         // Back
-        0.0,1.5,6.0,  0.3,1.5,6.0,  0.0,0.25,6.0,  0.3,0.25,6.0,  // Front set (56-57-58-59)
-        0.0,1.5,3.0,  0.3,1.5,3.0,  0.0,0.25,3.0,  0.3,0.25,3.0,  // Back set (60-61-62-63)
+        0.0,1.5,4.0,  0.3,1.5,4.0,  0.0,0.25,4.0,  0.3,0.25,4.0,  // Front set (56-57-58-59)
+        0.0,1.5,1.0,  0.3,1.5,1.0,  0.0,0.25,1.0,  0.3,0.25,1.0,  // Back set (60-61-62-63)
 
         // Left arm
-        0.3,1.1,6.0,  1.0,1.1,6.0,  0.3,0.25,6.0,  1.0,0.25,6.0, // Front set (64-65-66-67)
-        0.3,1.1,5.7,  1.0,1.1,5.7,  0.3,0.25,5.7,  1.0,0.25,5.7, // Back set (68-69-70-71)
+        0.3,1.1,4.0,  1.0,1.1,4.0,  0.3,0.25,4.0,  1.0,0.25,4.0, // Front set (64-65-66-67)
+        0.3,1.1,3.7,  1.0,1.1,3.7,  0.3,0.25,3.7,  1.0,0.25,3.7, // Back set (68-69-70-71)
 
         // Right arm
-        0.3,1.1,3.3,  1.0,1.1,3.3,  0.3,0.25,3.3,  1.0,0.25,3.3, // Front set (72-73-74-75)
-        0.3,1.1,3.0,  1.0,1.1,3.0,  0.3,0.25,3.0,  1.0,0.25,3.0, // Back set (76-77-78-79)
+        0.3,1.1,1.3,  1.0,1.1,1.3,  0.3,0.25,1.3,  1.0,0.25,1.3, // Front set (72-73-74-75)
+        0.3,1.1,1.0,  1.0,1.1,1.0,  0.3,0.25,1.0,  1.0,0.25,1.0, // Back set (76-77-78-79)
 
         // Seat
-        0.3,0.55,5.7,  1.0,0.55,5.7,  0.3,0.25,5.7,  1.0,0.25,5.7, // Front set (80-81-82-83)
-        0.3,0.55,3.3,  1.0,0.55,3.3,  0.3,0.25,3.3,  1.0,0.25,3.3, // Back set (84-85-86-87)
+        0.3,0.55,3.7,  1.0,0.55,3.7,  0.3,0.25,3.7,  1.0,0.25,3.7, // Front set (80-81-82-83)
+        0.3,0.55,1.3,  1.0,0.55,1.3,  0.3,0.25,1.3,  1.0,0.25,1.3, // Back set (84-85-86-87)
 
         // Leg 1
-        0.0,0.25,6.0,  0.2,0.25,6.0,  0.0,0.0,6.0,  0.2,0.0,6.0, // Front set (88-89-90-91)
-        0.0,0.25,5.8,  0.2,0.25,5.8,  0.0,0.0,5.8,  0.2,0.0,5.8, // Back set (92-93-94-95)
+        0.0,0.25,4.0,  0.2,0.25,4.0,  0.0,0.0,4.0,  0.2,0.0,4.0, // Front set (88-89-90-91)
+        0.0,0.25,3.8,  0.2,0.25,3.8,  0.0,0.0,3.8,  0.2,0.0,3.8, // Back set (92-93-94-95)
    
         // Leg 2
-        0.8,0.25,6.0,  1.0,0.25,6.0,  0.8,0.0,6.0,  1.0,0.0,6.0, // Front set (96-97-98-99)
-        0.8,0.25,5.8,  1.0,0.25,5.8,  0.8,0.0,5.8,  1.0,0.0,5.8, // Back set (100-101-102-103)
+        0.8,0.25,4.0,  1.0,0.25,4.0,  0.8,0.0,4.0,  1.0,0.0,4.0, // Front set (96-97-98-99)
+        0.8,0.25,3.8,  1.0,0.25,3.8,  0.8,0.0,3.8,  1.0,0.0,3.8, // Back set (100-101-102-103)
 
         // Leg 3
-        0.8,0.25,3.2,  1.0,0.25,3.2,  0.8,0.0,3.2,  1.0,0.0,3.2, // Front set (104-105-106-107)
-        0.8,0.25,3.0,  1.0,0.25,3.0,  0.8,0.0,3.0,  1.0,0.0,3.0, // Back set (108-109-110-111)
+        0.8,0.25,1.2,  1.0,0.25,1.2,  0.8,0.0,1.2,  1.0,0.0,1.2, // Front set (104-105-106-107)
+        0.8,0.25,1.0,  1.0,0.25,1.0,  0.8,0.0,1.0,  1.0,0.0,1.0, // Back set (108-109-110-111)
 
         // Leg 4
-        0.0,0.25,3.2,  0.2,0.25,3.2,  0.0,0.0,3.2,  0.2,0.0,3.2, // Front set (112-113-114-115)
-        0.0,0.25,3.0,  0.2,0.25,3.0,  0.0,0.0,3.0,  0.2,0.0,3.0, // Back set (116-117-118-119)
+        0.0,0.25,1.2,  0.2,0.25,1.2,  0.0,0.0,1.2,  0.2,0.0,1.2, // Front set (112-113-114-115)
+        0.0,0.25,1.0,  0.2,0.25,1.0,  0.0,0.0,1.0,  0.2,0.0,1.0, // Back set (116-117-118-119)
     ];
 
     let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts));
@@ -460,7 +473,7 @@ function initBuffers(gl){
     let roomTex = [
         0.0,0.0,  0.0,1.0,  1.0,0.0,  1.0,1.0, // Floor
         1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Left Wall
-        0.5,1.0,  1.0,1.0,  0.5,0.5,  1.0,0.5, // Right Wall
+        1.0,1.0,  0.0,1.0,  1.0,0.0,  0.0,0.0, // Right Wall
         0.0,0.0,  1.0,0.0,  0.0,1.0,  1.0,1.0, // Ceiling
     ];
 
@@ -548,7 +561,7 @@ function initBuffers(gl){
 }
 
 // Rendering the scene to canvas
-function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
+function draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -640,10 +653,12 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
-    // Set light parameters
-    const ambLight = new Vector3([0.2, 0.2, 0.2]);
-    const lightCol = new Vector3([1.0, 1.0, 1.0]);
-    const lightPos = new Vector3([3.75, 3.25, 3.75]);
+    // Set lighting colours
+    let lightCol = lightParams.colour;
+    if(lightParams.partyOn){
+        let index = Math.floor(Math.random() * (lightParams.partyCols.length));
+        lightCol = new Vector3(lightParams.partyCols[index]);
+    };
 
     // Set shader uniforms
     gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
@@ -651,9 +666,9 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, textures){
     gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMat.elements);
     gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMat.elements);
 
-    gl.uniform3fv(programInfo.uniformLocations.ambientLight, ambLight.elements);
+    gl.uniform3fv(programInfo.uniformLocations.ambientLight, lightParams.ambient.elements);
     gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
-    gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightPos.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightParams.position.elements);
 
     // ntex = number of textures = 4 room sides + 4 light cord sides + 6 light shade sides + 16 sofa surfaces
     const ntex = 4+4+6+48;
