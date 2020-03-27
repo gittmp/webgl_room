@@ -104,9 +104,10 @@ function main(){
     let tvParams = {
         channel: 0,
         switch: [
-            loadTexture(gl, programInfo, 'static.jpg'),
-            loadTexture(gl, programInfo, 'gru.jpg'),
-            loadTexture(gl, programInfo, 'simpsons.jpg'),
+            loadTexture(gl, programInfo, 'content/static.jpg'),
+            loadTexture(gl, programInfo, 'content/gru.jpg'),
+            loadTexture(gl, programInfo, 'content/simpsons.jpg'),
+            loadTexture(gl, programInfo, 'content/yoda.jpg'),
         ],
     };
 
@@ -137,31 +138,31 @@ function main(){
 function initTexArray(gl, programInfo){
     let textures = new Array();
 
-    const floorTex = loadTexture(gl, programInfo, 'floor.png');
+    const floorTex = loadTexture(gl, programInfo, 'content/floor.png');
     textures.push(["floor", floorTex]);
 
-    const wall1Tex = loadTexture(gl, programInfo, 'wall1.png');
+    const wall1Tex = loadTexture(gl, programInfo, 'content/wall1.png');
     textures.push(["wall1", wall1Tex]);
 
-    const wall2Tex = loadTexture(gl, programInfo, 'wallpaper.jpg');
+    const wall2Tex = loadTexture(gl, programInfo, 'content/wallpaper.jpg');
     textures.push(["wall2", wall2Tex]);
 
-    const ceilingTex = loadTexture(gl, programInfo, 'ceiling.png');
+    const ceilingTex = loadTexture(gl, programInfo, 'content/ceiling.png');
     textures.push(["ceiling", ceilingTex]);
 
-    const lightTex = loadTexture(gl, programInfo, 'lightshade.png');
+    const lightTex = loadTexture(gl, programInfo, 'content/lightshade.png');
     textures.push(["light", lightTex]);
 
-    const sofaTex = loadTexture(gl, programInfo, 'sofa.jpg');
+    const sofaTex = loadTexture(gl, programInfo, 'content/sofa.jpg');
     textures.push(["sofa", sofaTex]);
 
-    const woodTex = loadTexture(gl, programInfo, 'wood.jpeg');
+    const woodTex = loadTexture(gl, programInfo, 'content/wood.jpeg');
     textures.push(["wood", woodTex]);
 
-    const borderTex = loadTexture(gl, programInfo, 'border.jpg');
+    const borderTex = loadTexture(gl, programInfo, 'content/border.jpg');
     textures.push(["border", borderTex]);
 
-    const staticTex = loadTexture(gl, programInfo, 'static.jpg');
+    const staticTex = loadTexture(gl, programInfo, 'content/static.jpg');
     textures.push(["channel", staticTex]);
 
     return textures;
@@ -211,6 +212,9 @@ function keypress(ev, lookAtParams, lightParams, tvParams){
             break;
         case 51: //3 - tv channel 3
             tvParams.channel = 2;
+            break;
+        case 52: //4 - tv channel 4
+            tvParams.channel = 3;
             break;
         default:
             break;
