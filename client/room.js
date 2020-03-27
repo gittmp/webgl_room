@@ -134,6 +134,14 @@ function main(){
         textures.push(woodTex);
     };
 
+    const borderTex = loadTexture(gl, programInfo, 'border.jpg');
+    for(let st=0; st<6; st++){
+        textures.push(borderTex);
+    };
+
+    const staticTex = loadTexture(gl, programInfo, 'static.jpg');
+    textures.push(staticTex);
+
     document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
                                                         Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
 
@@ -315,7 +323,13 @@ function initBuffers(gl){
         0.0,0.25,1.0,  0.2,0.25,1.0,  0.0,0.0,1.0,  0.2,0.0,1.0, // Back set (116-117-118-119)
     ];
 
-    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts));
+    let tvVerts = [
+        1.8,2.4,0.1,  3.5,2.4,0.1,  1.8,1.3,0.1,  3.5,1.3,0.1, // Front set (120-121-122-123)
+        1.8,2.4,0.0,  3.5,2.4,0.0,  1.8,1.3,0.0,  3.5,1.3,0.0,  // Back set (124-125-126-127)
+        1.9,2.3,0.1001,  3.4,2.3,0.1001,  1.9,1.4,0.1001,  3.4,1.4,0.1001, // Screen (128-129-130-131)
+    ];
+
+    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts));
 
     // Triangle vertex index buffer data
     let roomIndices = [
@@ -407,7 +421,17 @@ function initBuffers(gl){
         116,117,118,  117,118,119, // Back side 
     ];
 
-    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices));
+    let tvIndices = [
+        120,121,122,  121,122,123, // Front
+        120,121,124,  121,124,125, // Top
+        124,120,126,  120,126,122, // Left
+        123,122,127,  122,127,126, // Bottom
+        123,121,127,  121,127,125, // Right
+        124,125,126,  125,126,127, // Back
+        128,129,130,  129,130,131, // Screen
+    ];
+
+    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices));
 
     // Normals buffer data
     let roomNormals = [
@@ -467,7 +491,13 @@ function initBuffers(gl){
         -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  // Back set
     ];
 
-    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals));
+    let tvNormals = [
+        -1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,-1.0,1.0,  1.0,-1.0,1.0, // Front set
+        -1.0,1.0,0.0,  1.0,1.0,0.0,  -1.0,-1.0,0.0,  1.0,-1.0,0.0, // Back set
+        0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, // Screen
+    ];
+
+    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals));
 
     // Texture coordinates buffer data
     let roomTex = [
@@ -529,7 +559,13 @@ function initBuffers(gl){
         0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
     ];
 
-    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex));
+    let tvTex = [
+        1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Front set
+        1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Back set
+        1.0,0.0,  0.0,0.0,  1.0,1.0,  0.0,1.0, // Screen
+    ];
+
+    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex));
 
     // Form buffer for vertices
     const vertexBuffer = gl.createBuffer();
@@ -671,7 +707,7 @@ function draw(gl, canvas, programInfo, buffers, lookAtParams, lightParams, textu
     gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightParams.position.elements);
 
     // ntex = number of textures = 4 room sides + 4 light cord sides + 6 light shade sides + 16 sofa surfaces
-    const ntex = 4+4+6+48;
+    const ntex = 4+4+6+48+7;
     for(let i=0; i<ntex; i++){
 
         gl.bindTexture(gl.TEXTURE_2D, textures[i]);
