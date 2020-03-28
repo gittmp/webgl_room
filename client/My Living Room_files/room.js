@@ -49,17 +49,17 @@ const FSHADER_SOURCE =
 function main(){
     const canvas = document.getElementById('wglCanvas');
 
-    // Initialise a webGL rendering context
+    //initialise a webGL rendering context
     const gl = canvas.getContext('webgl');
     if(gl == null){
         alert("Error: unable to initialise webGL context!");
         return;
     }
 
-    // Initialise shaders into a shader program
+    //initialise shaders into a shader program
     const shaderProgram = initShaderProgram(gl, VSHADER_SOURCE, FSHADER_SOURCE);
     
-    // Specify information data about program aspects which we can access when needed
+    //specify information data about program aspects which we can access when needed
     const programInfo = {
         program: shaderProgram,
         attribLocations: {
@@ -114,30 +114,30 @@ function main(){
         ],
     };
 
-    // Initialise vertex buffer
+    //initialise vertex buffer
     const buffers = initBuffers(gl);
 
     // Load textures into texture array
     let textures = initTexArray(gl, programInfo);
 
-    // document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
-    //                                                     Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
+    document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
+                                                        Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
 
     // Initialise attribute arrays
     initAttribs(gl, programInfo, buffers);
 
-    // f=Function to render scene to canvas
+    // function to render scene to canvas
     function render() {
         draw(gl, canvas, programInfo, lookAtParams, lightParams, tvParams, textures);
         requestAnimationFrame(render);
     }
 
-    // Moving viewpoint on keypress
+    // moving camera on keypress
     document.onkeydown = function(ev){
         keypress(ev, lookAtParams, lightParams, tvParams);
     };
 
-    // Rendering initial scene
+    // rendering initial scene
     requestAnimationFrame(render);
 }
 
@@ -199,7 +199,7 @@ function keypress(ev, lookAtParams, lightParams, tvParams){
             lookAtParams.ex += lookAtParams.estep;
             break;
         case 68: //d - increase x axes
-            lookAtParams.ex -= lookAtParams.estep;
+            lookAtParams.ex += lookAtParams.estep;
             break;
         case 88: //z - decrease z axes
             lookAtParams.ez += lookAtParams.estep;
@@ -226,8 +226,8 @@ function keypress(ev, lookAtParams, lightParams, tvParams){
             break;
     }
 
-    // document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
-    //                                                     Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
+    document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
+                                                        Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
 }
 
 //function to determine if dimentions of texture are of power 2
