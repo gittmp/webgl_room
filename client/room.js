@@ -83,7 +83,7 @@ function main(){
     gl.useProgram(programInfo.program);
 
     // Initialise camera position parameters
-    let lookAtParams = {
+    let cameraParams = {
         estep: 0.2,
         lstep: 2.0,
         ex: 0.0,
@@ -98,10 +98,13 @@ function main(){
     let lightParams = {
         ambient: new Vector3([0.2, 0.2, 0.2]),
         colour: new Vector3([1.0, 1.0, 1.0]),
-        position: new Vector3([3.75, 3.25, 3.75]),
+        posx: 3.75,
+        posy: 3.25,
+        posz: 3.75,
         partyOn: false,
         partyCols: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
                     [1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
+        partySong: new Audio('content/funkytown.mp3'),
     };
 
     let tvParams = {
@@ -120,21 +123,21 @@ function main(){
     // Load textures into texture array
     let textures = initTexArray(gl, programInfo);
 
-    // document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
-    //                                                     Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
+    // document.getElementById("coordinates").innerHTML = `Eye position: (${cameraParams.ex.toFixed(1)}, ${cameraParams.ey.toFixed(1)}, ${cameraParams.ez.toFixed(1)})
+    //                                                     Looking at: (${cameraParams.lx.toFixed(1)}, ${cameraParams.ly.toFixed(1)}, ${cameraParams.lz.toFixed(1)})`; 
 
     // Initialise attribute arrays
     initAttribs(gl, programInfo, buffers);
 
     // f=Function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, lookAtParams, lightParams, tvParams, textures);
+        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, textures);
         requestAnimationFrame(render);
     }
 
     // Moving viewpoint on keypress
     document.onkeydown = function(ev){
-        keypress(ev, lookAtParams, lightParams, tvParams);
+        keypress(ev, cameraParams, lightParams, tvParams);
     };
 
     // Rendering initial scene
@@ -171,44 +174,55 @@ function initTexArray(gl, programInfo){
     const staticTex = loadTexture(gl, programInfo, 'content/static.jpg');
     textures.push(["channel", staticTex]);
 
+    textures.push(['frame', woodTex]);
+
+    const pic1Tex = loadTexture(gl, programInfo, 'content/picture1.jpg');
+    textures.push(['picture', pic1Tex]);
+
     return textures;
 }
 
 //function to move camera when key pressed
-function keypress(ev, lookAtParams, lightParams, tvParams){
+function keypress(ev, cameraParams, lightParams, tvParams){
     switch (ev.keyCode) {
         case 38: //up arrow
-            lookAtParams.ly -= lookAtParams.lstep;
+            cameraParams.ly -= cameraParams.lstep;
             break;
         case 40: //down arrow
-            lookAtParams.ly += lookAtParams.lstep;
+            cameraParams.ly += cameraParams.lstep;
             break;
         case 39: //right arrow
-            lookAtParams.lx += lookAtParams.lstep;
+            cameraParams.lx += cameraParams.lstep;
             break;
         case 37: //left arrow
-            lookAtParams.lx -= lookAtParams.lstep;
+            cameraParams.lx -= cameraParams.lstep;
             break;
         case 87: //w - increase up y axes
-            lookAtParams.ey -= lookAtParams.estep;
+            cameraParams.ey -= cameraParams.estep;
             break;
         case 83: //s - decrease down y axes
-            lookAtParams.ey += lookAtParams.estep;
+            cameraParams.ey += cameraParams.estep;
             break;
         case 65: //a - decrease x axes
-            lookAtParams.ex += lookAtParams.estep;
+            cameraParams.ex += cameraParams.estep;
             break;
         case 68: //d - increase x axes
-            lookAtParams.ex -= lookAtParams.estep;
+            cameraParams.ex -= cameraParams.estep;
             break;
         case 88: //z - decrease z axes
-            lookAtParams.ez += lookAtParams.estep;
+            cameraParams.ez += cameraParams.estep;
             break;
         case 90: //x - increase z axes
-            lookAtParams.ez -= lookAtParams.estep;
+            cameraParams.ez -= cameraParams.estep;
             break;
         case 80: //p - party mode
             lightParams.partyOn = !lightParams.partyOn;
+            if(lightParams.partyOn){
+                lightParams.partySong.play();
+            } else {
+                lightParams.partySong.pause();
+                lightParams.partySong.currentTime = 0;
+            };
             break;
         case 49: //1 - tv channel 1
             tvParams.channel = 0;
@@ -226,8 +240,8 @@ function keypress(ev, lookAtParams, lightParams, tvParams){
             break;
     }
 
-    // document.getElementById("coordinates").innerHTML = `Eye position: (${lookAtParams.ex.toFixed(1)}, ${lookAtParams.ey.toFixed(1)}, ${lookAtParams.ez.toFixed(1)})
-    //                                                     Looking at: (${lookAtParams.lx.toFixed(1)}, ${lookAtParams.ly.toFixed(1)}, ${lookAtParams.lz.toFixed(1)})`; 
+    // document.getElementById("coordinates").innerHTML = `Eye position: (${cameraParams.ex.toFixed(1)}, ${cameraParams.ey.toFixed(1)}, ${cameraParams.ez.toFixed(1)})
+    //                                                     Looking at: (${cameraParams.lx.toFixed(1)}, ${cameraParams.ly.toFixed(1)}, ${cameraParams.lz.toFixed(1)})`; 
 }
 
 //function to determine if dimentions of texture are of power 2
@@ -356,7 +370,13 @@ function initBuffers(gl){
         1.9,2.3,0.1001,  3.4,2.3,0.1001,  1.9,1.4,0.1001,  3.4,1.4,0.1001, // Screen (128-129-130-131)
     ];
 
-    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts));
+    let pictureVerts = [
+        0.1,2.2,1.5,  0.1,2.2,3.5,  0.1,3.4,1.5,  0.1,3.4,3.5, // Front set (132-133-134-135)
+        0.0,2.2,1.5,  0.0,2.2,3.5,  0.0,3.4,1.5,  0.0,3.4,3.5, // Back set (136-137-138-139)
+        0.1001,2.4,1.7,  0.1001,2.4,3.3,  0.1001,3.2,1.7,  0.1001,3.2,3.3, // Picture (140-141-142-143)
+    ];
+
+    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts, pictureVerts));
 
     // Triangle vertex index buffer data
     let roomIndices = [
@@ -458,7 +478,17 @@ function initBuffers(gl){
         128,129,130,  129,130,131, // Screen
     ];
 
-    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices));
+    let pictureIndices = [
+        132,133,134,  133,134,135, // Front
+        134,135,138,  135,138,139, // Top
+        135,133,139,  133,139,137, // Left
+        132,133,136,  133,136,137, // Bottom
+        132,134,136,  134,136,138, // Right
+        136,137,138,  137,138,139, // Back
+        140,141,142,  141,142,143, // Picture
+    ];
+
+    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices, pictureIndices));
 
     // Normals buffer data
     let roomNormals = [
@@ -521,10 +551,16 @@ function initBuffers(gl){
     let tvNormals = [
         -1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,-1.0,1.0,  1.0,-1.0,1.0, // Front set
         -1.0,1.0,0.0,  1.0,1.0,0.0,  -1.0,-1.0,0.0,  1.0,-1.0,0.0, // Back set
-        0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0,  0.0,0.0,1.0, // Screen
+        -1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,-1.0,1.0,  1.0,-1.0,1.0, // Screen
     ];
 
-    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals));
+    let pictureNormals = [
+        1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0, // Front set
+        0.0,-1.0,-1.0,  0.0,-1.0,1.0,  0.0,1.0,-1.0,  0.0,1.0,1.0, // Back set
+        1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0, // Picture
+    ];
+
+    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals, pictureNormals));
 
     // Texture coordinates buffer data
     let roomTex = [
@@ -592,7 +628,13 @@ function initBuffers(gl){
         0.0,0.0,  1.0,0.0,  0.0,1.0,  1.0,1.0, // Screen
     ];
 
-    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex));
+    let pictureTex = [
+        1.0,0.0,  0.0,0.0,  1.0,1.0, 0.0,1.0, // Front set
+        1.0,0.0,  0.0,0.0,  1.0,1.0, 0.0,1.0, // Back set
+        0.0,1.0,  1.0,1.0,  0.0,0.0, 1.0,0.0, // Picture
+    ];
+
+    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex, pictureTex));
 
     // Form buffer for vertices
     const vertexBuffer = gl.createBuffer();
@@ -691,7 +733,7 @@ function initAttribs(gl, programInfo, buffers){
 };
 
 // Initiating attribute array buffer & matrices
-function draw(gl, canvas, programInfo, lookAtParams, lightParams, tvParams, textures){
+function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -726,16 +768,33 @@ function draw(gl, canvas, programInfo, lookAtParams, lightParams, tvParams, text
         lightCol = new Vector3(lightParams.partyCols[index]);
     };
 
-    // let lightPos = lightParams.position + 
+    let lightPos = new Vector3([
+        lightParams.posx + cameraParams.ex,
+        lightParams.posy + cameraParams.ey,
+        lightParams.posz + cameraParams.ez
+    ]);
+
+    // let lightPos2 = [
+    //     lightPos1[0],
+    //     lightPos1[1]*Math.cos(cameraParams.ly) - lightPos1[2]*Math.sin(cameraParams.ly),
+    //     lightPos1[1]*Math.sin(cameraParams.ly) + lightPos1[2]*Math.cos(cameraParams.ly)
+    // ];
+
+    // let lightPos = new Vector3([
+    //     lightPos2[0]*Math.cos(cameraParams.lx) + lightPos2[2]*Math.sin(cameraParams.lx),
+    //     lightPos2[1],
+    //     lightPos2[2]*Math.cos(cameraParams.lx) - lightPos2[0]*Math.sin(cameraParams.lx)
+    // ]);
+
 
     // Rotate to look left/right/up/down
-    modelMat.setTranslate(-lookAtParams.ex, 0.0, -lookAtParams.ez);
-    modelMat.rotate(lookAtParams.lx, 0.0, 1.0, 0.0);
-    modelMat.rotate(lookAtParams.ly, 1.0, 0.0, 0.0);
-    modelMat.translate(lookAtParams.ex, 0.0, lookAtParams.ez);
+    modelMat.setTranslate(-cameraParams.ex, 0.0, -cameraParams.ez);
+    modelMat.rotate(cameraParams.lx, 0.0, 1.0, 0.0);
+    modelMat.rotate(cameraParams.ly, 1.0, 0.0, 0.0);
+    modelMat.translate(cameraParams.ex, 0.0, cameraParams.ez);
 
     // Translate to move in +/- x/y/z direction
-    modelMat.translate(lookAtParams.ex,lookAtParams.ey,lookAtParams.ez);
+    modelMat.translate(cameraParams.ex,cameraParams.ey,cameraParams.ez);
 
     // Set shader uniforms
     gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
@@ -745,49 +804,50 @@ function draw(gl, canvas, programInfo, lookAtParams, lightParams, tvParams, text
 
     gl.uniform3fv(programInfo.uniformLocations.ambientLight, lightParams.ambient.elements);
     gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
-    gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightParams.position.elements);
+    gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightPos.elements);
 
-    let k = 0;
+    let karray = [0];
 
     // Floor
-    k = drawElem(gl, textures, tvParams, 0, k);
+    karray.push(drawElem(gl, textures, tvParams, 0, karray[karray.length - 1]));
 
     // Left wall
-    k = drawElem(gl, textures, tvParams, 1, k);
+    karray.push(drawElem(gl, textures, tvParams, 1, karray[karray.length - 1]));
 
     // Right wall
-    k = drawElem(gl, textures, tvParams, 2, k);
+    karray.push(drawElem(gl, textures, tvParams, 2, karray[karray.length - 1]));
 
     // Ceiling
-    k = drawElem(gl, textures, tvParams, 3, k);
+    karray.push(drawElem(gl, textures, tvParams, 3, karray[karray.length - 1]));
 
     // Light
-    k = drawElem(gl, textures, tvParams, 4, k);
-
-    
-    // modelMat.translate(2.0,.0,2.0);
-
-    // // Set shader uniforms
-    // gl.uniformMatrix4fv(programInfo.uniformLocations.projMatrix, false, projMat.elements);
-    // gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
-    // gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, viewMat.elements);
-    // gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMat.elements);
-
-    // gl.uniform3fv(programInfo.uniformLocations.ambientLight, lightParams.ambient.elements);
-    // gl.uniform3fv(programInfo.uniformLocations.lightColour, lightCol.elements);
-    // gl.uniform3fv(programInfo.uniformLocations.lightPosition, lightParams.position.elements);
+    karray.push(drawElem(gl, textures, tvParams, 4, karray[karray.length - 1]));
 
     // Sofa body
-    k = drawElem(gl, textures, tvParams, 5, k);
+    karray.push(drawElem(gl, textures, tvParams, 5, karray[karray.length - 1]));
 
     // Sofa feet
-    k = drawElem(gl, textures, tvParams, 6, k);
+    karray.push(drawElem(gl, textures, tvParams, 6, karray[karray.length - 1]));
 
     // TV frame
-    k = drawElem(gl, textures, tvParams, 7, k);
+    karray.push(drawElem(gl, textures, tvParams, 7, karray[karray.length - 1]));
 
     // TV screen
-    k = drawElem(gl, textures, tvParams, 8, k);
+    karray.push(drawElem(gl, textures, tvParams, 8, karray[karray.length - 1]));
+
+    // Create another whole tv shifted right 2
+    modelMat.translate(2.0, 0.0, 2.0);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    karray.push(drawElem(gl, textures, tvParams, 7, karray[karray.length - 3]));
+    karray.push(drawElem(gl, textures, tvParams, 8, karray[karray.length - 3]));
+    modelMat.translate(-2.0, 0.0, -2.0);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
+    // Picture frame 1
+    karray.push(drawElem(gl, textures, tvParams, 9, karray[karray.length - 1]));
+
+    // Picture 1
+    karray.push(drawElem(gl, textures, tvParams, 10, karray[karray.length - 1]));
 }
 
 function drawElem(gl, textures, tvParams, i, k){
@@ -820,6 +880,12 @@ function drawElem(gl, textures, tvParams, i, k){
         case 'channel': 
             index = 1;
             textures[i][1] = tvParams.switch[[tvParams.channel]];
+            break;
+        case 'frame':
+            index = 6;
+            break;
+        case 'picture':
+            index = 1;
             break;
         default:
             break;
