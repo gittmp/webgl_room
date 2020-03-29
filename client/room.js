@@ -174,7 +174,8 @@ function initTexArray(gl, programInfo){
     const staticTex = loadTexture(gl, programInfo, 'content/static.jpg');
     textures.push(["channel", staticTex]);
 
-    textures.push(['frame', woodTex]);
+    const frameTex = loadTexture(gl, programInfo, 'content/frame.jpeg');
+    textures.push(['frame', frameTex]);
 
     const pic1Tex = loadTexture(gl, programInfo, 'content/picture1.jpg');
     textures.push(['picture', pic1Tex]);
