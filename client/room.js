@@ -98,9 +98,9 @@ function main(){
     let lightParams = {
         ambient: new Vector3([0.2, 0.2, 0.2]),
         colour: new Vector3([1.0, 1.0, 1.0]),
-        posx: 3.75,
+        posx: 4.1,
         posy: 3.25,
-        posz: 3.75,
+        posz: 4.1,
         partyOn: false,
         partyCols: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
                     [1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
@@ -148,37 +148,52 @@ function initTexArray(gl, programInfo){
     let textures = new Array();
 
     const floorTex = loadTexture(gl, programInfo, 'content/floor.png');
-    textures.push(["floor", floorTex]);
+    textures.push([1, floorTex]);
 
     const wall1Tex = loadTexture(gl, programInfo, 'content/wall1.png');
-    textures.push(["wall1", wall1Tex]);
+    textures.push([1, wall1Tex]);
 
     const wall2Tex = loadTexture(gl, programInfo, 'content/wallpaper.jpg');
-    textures.push(["wall2", wall2Tex]);
+    textures.push([1, wall2Tex]);
 
     const ceilingTex = loadTexture(gl, programInfo, 'content/ceiling.png');
-    textures.push(["ceiling", ceilingTex]);
+    textures.push([1, ceilingTex]);
 
     const lightTex = loadTexture(gl, programInfo, 'content/lightshade.png');
-    textures.push(["light", lightTex]);
+    textures.push([10, lightTex]);
 
     const sofaTex = loadTexture(gl, programInfo, 'content/sofa.jpg');
-    textures.push(["sofa", sofaTex]);
+    textures.push([24, sofaTex]);
 
     const woodTex = loadTexture(gl, programInfo, 'content/wood.jpeg');
-    textures.push(["wood", woodTex]);
+    textures.push([24, woodTex]);
 
     const borderTex = loadTexture(gl, programInfo, 'content/border.jpg');
-    textures.push(["border", borderTex]);
+    textures.push([6, borderTex]);
 
     const staticTex = loadTexture(gl, programInfo, 'content/static.jpg');
-    textures.push(["channel", staticTex]);
+    textures.push(['channel', staticTex]);
 
     const frameTex = loadTexture(gl, programInfo, 'content/frame.jpeg');
-    textures.push(['frame', frameTex]);
+    textures.push([6, frameTex]);
 
     const pic1Tex = loadTexture(gl, programInfo, 'content/picture1.jpg');
-    textures.push(['picture', pic1Tex]);
+    textures.push([1, pic1Tex]);
+
+    const pic2Tex = loadTexture(gl, programInfo, 'content/picture2.jpg');
+    textures.push([1, pic2Tex]);
+
+    const frame2Tex = loadTexture(gl, programInfo, 'content/frame2.jpg');
+    textures.push([6, frame2Tex]);
+
+    const pic3Tex = loadTexture(gl, programInfo, 'content/peppers.png');
+    textures.push([1, pic3Tex]);
+
+    const pic4Tex = loadTexture(gl, programInfo, 'content/dino.jpg');
+    textures.push([1, pic4Tex]);
+
+    const pic5Tex = loadTexture(gl, programInfo, 'content/dolphins.jpg');
+    textures.push([1, pic5Tex]);
 
     return textures;
 }
@@ -186,37 +201,37 @@ function initTexArray(gl, programInfo){
 //function to move camera when key pressed
 function keypress(ev, cameraParams, lightParams, tvParams){
     switch (ev.keyCode) {
-        case 38: //up arrow
+        case 38: // Up arrow - look up
             cameraParams.ly -= cameraParams.lstep;
             break;
-        case 40: //down arrow
+        case 40: // Down arrow - look down
             cameraParams.ly += cameraParams.lstep;
             break;
-        case 39: //right arrow
+        case 39: // Right arrow - look right
             cameraParams.lx += cameraParams.lstep;
             break;
-        case 37: //left arrow
+        case 37: // Left arrow - look left
             cameraParams.lx -= cameraParams.lstep;
             break;
-        case 87: //w - increase up y axes
-            cameraParams.ey -= cameraParams.estep;
-            break;
-        case 83: //s - decrease down y axes
-            cameraParams.ey += cameraParams.estep;
-            break;
-        case 65: //a - decrease x axes
-            cameraParams.ex += cameraParams.estep;
-            break;
-        case 68: //d - increase x axes
-            cameraParams.ex -= cameraParams.estep;
-            break;
-        case 88: //z - decrease z axes
+        case 87: // W - move forward (towards origin along negative z)
             cameraParams.ez += cameraParams.estep;
             break;
-        case 90: //x - increase z axes
+        case 83: // S - move backwards (away from origin along positive z)
             cameraParams.ez -= cameraParams.estep;
             break;
-        case 80: //p - party mode
+        case 65: // A - move left (along negative x)
+            cameraParams.ex += cameraParams.estep;
+            break;
+        case 68: // D - move right (along positive x)
+            cameraParams.ex -= cameraParams.estep;
+            break;
+        case 88: // Z - move up (along positive y)
+            cameraParams.ey -= cameraParams.estep;
+            break;
+        case 90: // X - move down (along negative y)
+            cameraParams.ey += cameraParams.estep;
+            break;
+        case 80: // P - party mode (lights + sound)
             lightParams.partyOn = !lightParams.partyOn;
             if(lightParams.partyOn){
                 lightParams.partySong.play();
@@ -225,16 +240,16 @@ function keypress(ev, cameraParams, lightParams, tvParams){
                 lightParams.partySong.currentTime = 0;
             };
             break;
-        case 49: //1 - tv channel 1
+        case 49: // 1 - tv channel 1
             tvParams.channel = 0;
             break;
-        case 50: //2 - tv channel 2
+        case 50: // 2 - tv channel 2
             tvParams.channel = 1;
             break;
-        case 51: //3 - tv channel 3
+        case 51: // 3 - tv channel 3
             tvParams.channel = 2;
             break;
-        case 52: //4 - tv channel 4
+        case 52: // 4 - tv channel 4
             tvParams.channel = 3;
             break;
         default:
@@ -375,6 +390,10 @@ function initBuffers(gl){
         0.1,2.2,1.5,  0.1,2.2,3.5,  0.1,3.4,1.5,  0.1,3.4,3.5, // Front set (132-133-134-135)
         0.0,2.2,1.5,  0.0,2.2,3.5,  0.0,3.4,1.5,  0.0,3.4,3.5, // Back set (136-137-138-139)
         0.1001,2.4,1.7,  0.1001,2.4,3.3,  0.1001,3.2,1.7,  0.1001,3.2,3.3, // Picture (140-141-142-143)
+
+        4.5,2.5,0.1,  5.5,2.5,0.1,  4.5,3.5,0.1,  5.5,3.5,0.1, // Front set (144-145-146-147)
+        4.5,2.5,0.0,  5.5,2.5,0.0,  4.5,3.5,0.0,  5.5,3.5,0.0, // Back set (148-149-150-151)
+        4.7,2.7,0.1001,  5.3,2.7,0.1001,  4.7,3.3,0.1001,  5.3,3.3,0.1001, // Picture (152-153-154-155)
     ];
 
     let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts, pictureVerts));
@@ -487,6 +506,14 @@ function initBuffers(gl){
         132,134,136,  134,136,138, // Right
         136,137,138,  137,138,139, // Back
         140,141,142,  141,142,143, // Picture
+
+        144,145,146,  145,146,147, // Front
+        146,147,150,  147,150,151, // Top
+        144,146,148,  146,148,150, // Left
+        144,145,148,  145,148,149, // Bottom
+        145,147,149,  147,149,151, // Right
+        148,149,150,  149,150,151, // Back
+        152,153,154,  153,154,155, // Picture
     ];
 
     let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices, pictureIndices));
@@ -559,6 +586,10 @@ function initBuffers(gl){
         1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0, // Front set
         0.0,-1.0,-1.0,  0.0,-1.0,1.0,  0.0,1.0,-1.0,  0.0,1.0,1.0, // Back set
         1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0, // Picture
+
+        -1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,1.0,1.0,  1.0,1.0,1.0, // Front set
+        -1.0,-1.0,0.0,  1.0,-1.0,0.0,  -1.0,1.0,0.0,  1.0,1.0,0.0, // Back set
+        -1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,1.0,1.0,  1.0,1.0,1.0, // Picture
     ];
 
     let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals, pictureNormals));
@@ -630,9 +661,13 @@ function initBuffers(gl){
     ];
 
     let pictureTex = [
-        1.0,0.0,  0.0,0.0,  1.0,1.0, 0.0,1.0, // Front set
-        1.0,0.0,  0.0,0.0,  1.0,1.0, 0.0,1.0, // Back set
-        0.0,1.0,  1.0,1.0,  0.0,0.0, 1.0,0.0, // Picture
+        0.0,1.0,  1.0,1.0,  0.0,0.0, 1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0, 1.0,0.0, // Back set
+        1.0,1.0,  0.0,1.0,  1.0,0.0,  0.0,0.0, // Picture
+
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Front set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Back set
+        0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Picture
     ];
 
     let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex, pictureTex));
@@ -836,60 +871,46 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
     // TV screen
     karray.push(drawElem(gl, textures, tvParams, 8, karray[karray.length - 1]));
 
-    // Create another whole tv shifted right 2
-    modelMat.translate(2.0, 0.0, 2.0);
-    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
-    karray.push(drawElem(gl, textures, tvParams, 7, karray[karray.length - 3]));
-    karray.push(drawElem(gl, textures, tvParams, 8, karray[karray.length - 3]));
-    modelMat.translate(-2.0, 0.0, -2.0);
-    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
-
-    // Picture frame 1
-    karray.push(drawElem(gl, textures, tvParams, 9, karray[karray.length - 1]));
-
     // Picture 1
+    karray.push(drawElem(gl, textures, tvParams, 9, karray[karray.length - 1]));
     karray.push(drawElem(gl, textures, tvParams, 10, karray[karray.length - 1]));
+
+    // Picture 2
+    karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 1]));
+    karray.push(drawElem(gl, textures, tvParams, 14, karray[karray.length - 1]));
+
+    // Picture 3
+    modelMat.translate(0.0,-1.4,0.0);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
+    karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 3]));
+    karray.push(drawElem(gl, textures, tvParams, 11, karray[karray.length - 3]));
+
+    // Picture 4
+    modelMat.translate(1.0,1.4,1.0);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
+    karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 5]));
+    karray.push(drawElem(gl, textures, tvParams, 13, karray[karray.length - 5]));
+
+    // Picture 5
+    modelMat.translate(0.0,-1.4,0.0);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
+    karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 7]));
+    karray.push(drawElem(gl, textures, tvParams, 15, karray[karray.length - 7]));
+
+    // Reset model matrix
+    modelMat.translate(-1.0,1.4,-1.0);
 }
 
 function drawElem(gl, textures, tvParams, i, k){
+
     let index = 1;
-    switch (textures[i][0]) {
-        case 'floor': 
-            index = 1;
-            break;
-        case 'wall1': 
-            index = 1;
-            break;
-        case 'wall2': 
-            index = 1;
-            break;
-        case 'ceiling': 
-            index = 1;
-            break;
-        case 'light': 
-            index = 10;
-            break;
-        case 'sofa': 
-            index = 24;
-            break;
-        case 'wood': 
-            index = 24;
-            break;
-        case 'border': 
-            index = 6;
-            break;
-        case 'channel': 
-            index = 1;
-            textures[i][1] = tvParams.switch[[tvParams.channel]];
-            break;
-        case 'frame':
-            index = 6;
-            break;
-        case 'picture':
-            index = 1;
-            break;
-        default:
-            break;
+    if(textures[i][0] == 'channel'){
+        textures[i][1] = tvParams.switch[[tvParams.channel]];
+    } else {
+        index = textures[i][0];
     };
 
     for(let j=0; j<index; j++){
