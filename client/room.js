@@ -195,6 +195,9 @@ function initTexArray(gl, programInfo){
     const pic5Tex = loadTexture(gl, programInfo, 'content/dolphins.jpg');
     textures.push([1, pic5Tex]);
 
+    const tabletopTex = loadTexture(gl, programInfo, 'content/sofa.jpg');
+    textures.push([2, tabletopTex]);
+
     return textures;
 }
 
@@ -396,9 +399,27 @@ function initBuffers(gl){
         4.7,2.7,0.1001,  5.3,2.7,0.1001,  4.7,3.3,0.1001,  5.3,3.3,0.1001, // Picture (152-153-154-155)
     ];
 
-    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts, pictureVerts));
+    let tableVerts = [
+        // Top octogon
+        -1.21,1.0,-0.5,  -0.5,1.0,-1.21,  // (156-157)
+        0.5,1.0,-1.21,  1.21,1.0,-0.5, // (158-159)
+        1.21,1.0,0.5,  0.5,1.0,1.21, // (160-161)
+        -0.5,1.0,1.21,  -1.21,1.0,0.5, // (162-163)
 
-    // Triangle vertex index buffer data
+        // Bottom octogon
+        -1.21,0.9,-0.5,  -0.5,0.9,-1.21,  // (164-165)
+        0.5,0.9,-1.21,  1.21,0.9,-0.5, // (166-167)
+        1.21,0.9,0.5,  0.5,0.9,1.21, // (168-169)
+        -0.5,0.9,1.21,  -1.21,0.9,0.5, // (170-171)
+
+        // Centers
+        0.0,1.0,0.0, // Top center (172)
+        0.0,0.9,0.0, // Bottom center (173)
+    ];
+
+    let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts, pictureVerts, tableVerts));
+
+    // Vertex index buffer data
     let roomIndices = [
         0,1,2,  1,2,3, //floor
         6,7,4,  7,4,5, //left wall
@@ -516,7 +537,12 @@ function initBuffers(gl){
         152,153,154,  153,154,155, // Picture
     ];
 
-    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices, pictureIndices));
+    let tableIndices = [
+        156,157,172,  157,158,172,  158,159,172,  159,160,172,  160,161,172,  161,162,172,  162,163,172,  163,156,172, // Top octogon
+        164,165,173,  165,166,173,  166,167,173,  167,168,173,  168,169,173,  169,170,173,  170,171,173,  171,164,173, // Bottom octogon
+    ];
+
+    let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices, pictureIndices, tableIndices));
 
     // Normals buffer data
     let roomNormals = [
@@ -592,7 +618,13 @@ function initBuffers(gl){
         -1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,1.0,1.0,  1.0,1.0,1.0, // Picture
     ];
 
-    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals, pictureNormals));
+    let tableNormals = [
+        -1.0,1.0,-1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,1.0,  -1.0,1.0,1.0, // Top octogon
+        -1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,-1.0,1.0,  -1.0,-1.0,1.0, // Bottom octogon
+        0.0,1.0,0.0,  0.0,-1.0,0.0, // Centers
+    ];
+
+    let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals, pictureNormals, tableNormals));
 
     // Texture coordinates buffer data
     let roomTex = [
@@ -670,7 +702,13 @@ function initBuffers(gl){
         0.0,1.0,  1.0,1.0,  0.0,0.0,  1.0,0.0, // Picture
     ];
 
-    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex, pictureTex));
+    let tableTex = [
+        0.6,0.0,  1.0,0.3,  1.0,0.6,  0.6,1.0,  0.3,1.0,  0.0,0.6,  0.0,0.3,  0.3,0.0, // Top octogon
+        0.6,0.0,  1.0,0.3,  1.0,0.6,  0.6,1.0,  0.3,1.0,  0.0,0.6,  0.0,0.3,  0.3,0.0, // Bottom octogon
+        0.5,0.5,  0.5,0.5, // Centers
+    ];
+
+    let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex, pictureTex, tableTex));
 
     // Form buffer for vertices
     const vertexBuffer = gl.createBuffer();
@@ -902,7 +940,13 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
 
     // Reset model matrix
     modelMat.translate(-1.0,1.4,-1.0);
-}
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
+    // Table
+    modelMat.translate(2.0,0.0,6.5);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    karray.push(drawPoly(gl, textures, 16, karray[karray.length - 1]));
+};
 
 function drawElem(gl, textures, tvParams, i, k){
 
@@ -917,6 +961,27 @@ function drawElem(gl, textures, tvParams, i, k){
         gl.bindTexture(gl.TEXTURE_2D, textures[i][1]);
         {
             const v = 6;
+            const type = gl.UNSIGNED_SHORT;
+            const offset = 2*k*6;
+            gl.drawElements(
+                gl.TRIANGLES, 
+                v, 
+                type, 
+                offset
+            );
+        }
+        k++;
+    };
+
+    return k;
+};
+
+function drawPoly(gl, textures, i, k){
+    
+    for(let j=0; j<6; j++){
+        gl.bindTexture(gl.TEXTURE_2D, textures[i][1]);
+        {
+            const v = 24;
             const type = gl.UNSIGNED_SHORT;
             const offset = 2*k*6;
             gl.drawElements(
