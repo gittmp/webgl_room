@@ -198,8 +198,8 @@ function initTexArray(gl, programInfo){
     const tabletopTex = loadTexture(gl, programInfo, 'content/table.png');
     textures.push([8, tabletopTex]);
 
-    const chairTex = loadTexture(gl, programInfo, 'content/table.png');
-    textures.push([1, chairTex]);
+    const chairTex = loadTexture(gl, programInfo, 'content/sofa.jpg');
+    textures.push([28, chairTex]);
 
     return textures;
 }
@@ -422,6 +422,16 @@ function initBuffers(gl){
     ];
 
     let chairVerts = [
+        0.0,1.3,0.7,  0.2,1.3,0.7,  0.0,0.0,0.7,  0.2,0.0,0.7, // (174-175-176-177)
+        0.2,0.6,0.7,  0.7,0.6,0.7,  0.2,0.4,0.7,  0.7,0.4,0.7, // (178-179-180-181)
+        0.5,0.4,0.7,  0.5,0.0,0.7,  0.7,0.0,0.7,  0.0,1.3,0.0, // (182-183-184-185)
+        0.2,1.3,0.0,  0.0,0.0,0.0,  0.2,0.0,0.0,  0.2,0.6,0.0, // (186-187-188-189)
+        0.7,0.6,0.0,  0.2,0.4,0.0,  0.7,0.4,0.0,  0.5,0.4,0.0, // (190-191-192-193)
+        0.5,0.0,0.0,  0.7,0.0,0.0,  0.0,0.4,0.0,  0.0,0.4,0.7, // (194-195-196-197)
+        0.0,0.4,0.5,  0.3,0.4,0.6,  0.0,0.0,0.5,  0.2,0.0,0.5, // (198-199-200-201)
+        0.5,0.4,0.5,  0.7,0.4,0.5,  0.5,0.0,0.5,  0.7,0.0,0.5, // (202-203-204-205)
+        0.0,0.4,0.2,  0.2,0.4,0.2,  0.0,0.0,0.2,  0.2,0.0,0.2, // (206-207-208-209)
+        0.5,0.4,0.2,  0.7,0.4,0.2,  0.5,0.0,0.2,  0.7,0.0,0.2, // (210-211-212-213)
     ];
 
     let vertices = new Float32Array(roomVerts.concat(lightCordVerts, lightShadeVerts, sofaVerts, tvVerts, pictureVerts, tableVerts, chairVerts));
@@ -569,6 +579,34 @@ function initBuffers(gl){
     ];
 
     let chairIndices = [
+        174,175,176,  175,176,177, // Back/leg 1 front
+        178,179,180,  179,180,181, // Seat front
+        182,181,183,  181,183,184, // Leg 2 front
+        185,186,187,  186,187,188, // Back/leg 3 back
+        189,190,191,  190,191,192, // Seat back
+        193,192,194,  192,194,195, // Leg 4 back
+        181,197,192,  197,192,196, // Seat bottom
+        174,197,185,  197,185,196, // Back left
+        179,190,181,  190,181,192, // Seat right
+        175,186,178,  186,178,189, // Back right
+        174,175,185,  175,185,186, // Back top
+        178,179,189,  179,189,190, // Seat top
+        198,199,200,  199,200,201, // Leg 1 back
+        197,198,176,  198,176,200, // Leg 1 left
+        176,177,200,  177,200,201, // Leg 1 bottom
+        180,177,199,  177,199,201, // Leg 1 right
+        202,203,204,  203,204,205, // Leg 2 back
+        182,202,183,  202,183,204, // Leg 2 left
+        183,184,204,  184,204,205, // Leg 2 bottom
+        181,184,203,  184,203,205, // Leg 2 right
+        206,207,208,  207,208,209, // Leg 3 front
+        206,196,208,  196,208,187, // Leg 3 left
+        208,209,187,  209,187,188, // Leg 3 bottom
+        207,191,209,  191,209,188, // Leg 3 right
+        210,211,212,  211,212,213, // Leg 4 front
+        210,193,212,  193,212,194, // Leg 4 left
+        212,213,194,  213,194,195, // Leg 4 bottom
+        211,192,213,  192,213,195, // Leg 4 right
     ];
 
     let indices = new Uint16Array(roomIndices.concat(lightCordIndices, lightShadeIndices, sofaIndices, tvIndices, pictureIndices, tableIndices, chairIndices));
@@ -654,6 +692,16 @@ function initBuffers(gl){
     ];
 
     let chairNormals = [
+        -1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0, 
+        1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,-1.0,1.0,  1.0,0.0,1.0,
+        -1.0,-1.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,1.0,-1.0,
+        1.0,1.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,  1.0,1.0,-1.0,
+        1.0,1.0,-1.0,  1.0,-1.0,-1.0,  1.0,0.0,-1.0,  -1.0,-1.0,-1.0,
+        -1.0,0.0,-1.0,  1.0,0.0,-1.0,  -1.0,0.0,-1.0,  -1.0,0.0,1.0,
+        -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,
+        -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,
+        -1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,
+        -1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,0.0,1.0,  1.0,0.0,1.0,
     ];
 
     let normals = new Float32Array(roomNormals.concat(lightCordNormals, lightShadeNormals, sofaNormals, tvNormals, pictureNormals, tableNormals, chairNormals));
@@ -741,6 +789,16 @@ function initBuffers(gl){
     ];
 
     let chairTex = [
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0, 
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
+        0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,  0.0,0.0,0.0,
     ];
 
     let texCoordinates = new Float32Array(roomTex.concat(lightCordTex, lightShadeTex, sofaTex, tvTex, pictureTex, tableTex, chairTex));
@@ -994,6 +1052,8 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
 
     // Chairs
+    modelMat.translate(0.0,0.0,5.0);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 1]));
     
 };
