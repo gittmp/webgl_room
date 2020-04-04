@@ -686,9 +686,16 @@ function initBuffers(gl){
     ];
 
     let tableNormals = [
-        -1.0,1.0,-1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,1.0,  -1.0,1.0,1.0, // Top octogon
-        -1.0,-1.0,-1.0,  -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,-1.0,1.0,  -1.0,-1.0,1.0, // Bottom octogon
-        0.0,1.0,0.0,  0.0,-1.0,0.0, // Centers
+        // Top octogon
+        1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
+        1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,
+
+        // Bottom octogon
+        1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,-1.0,1.0,
+        1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,
+
+        // Centers
+        0.0,1.0,0.0,  0.0,-1.0,0.0, 
     ];
 
     let chairNormals = [
@@ -1031,8 +1038,9 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
 
     karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 7]));
     karray.push(drawElem(gl, textures, tvParams, 15, karray[karray.length - 7]));
+
     // Table
-    modelMat.translate(-4.0,1.2,5.0);
+    modelMat.translate(1.5,1.2,5.5);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
 
     drawPoly(gl, textures, 16, karray[karray.length - 1]);
@@ -1046,14 +1054,12 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
 
     karray.push(drawElem(gl, textures, tvParams, 16, karray[karray.length - 2]));
 
-    // Resetting coordinates
-    modelMat.scale(5.0,0.125,5.0);
-    modelMat.translate(3.0,-6.79,5.2);
-    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
-
     // Chairs
-    modelMat.translate(0.0,0.0,5.0);
+    modelMat.scale(5.0,0.125,5.0);
+    modelMat.translate(-1.0,-6.79,9.6);
+    modelMat.rotate(0.0, 0.0, 1.0, 0.0);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 1]));
     
 };
