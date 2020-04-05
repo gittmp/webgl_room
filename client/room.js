@@ -687,12 +687,18 @@ function initBuffers(gl){
 
     let tableNormals = [
         // Top octogon
-        1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
-        1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,
+        1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
+        1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
 
         // Bottom octogon
-        1.0,-1.0,-1.0,  1.0,-1.0,-1.0,  1.0,-1.0,1.0,  1.0,-1.0,1.0,
-        1.0,-1.0,1.0,  1.0,-1.0,1.0,  -1.0,-1.0,-1.0,  1.0,-1.0,-1.0,
+        1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
+        1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
+
+        // 1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
+        // 1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,
+
+        // 1.0,0.0,-1.0,  1.0,0.0,-1.0,  1.0,0.0,1.0,  1.0,0.0,1.0,
+        // 1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,
 
         // Centers
         0.0,1.0,0.0,  0.0,-1.0,0.0, 
@@ -1040,7 +1046,7 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
     karray.push(drawElem(gl, textures, tvParams, 15, karray[karray.length - 7]));
 
     // Table
-    modelMat.translate(1.5,1.2,5.5);
+    modelMat.translate(1.0,1.2,5.5);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
 
     drawPoly(gl, textures, 16, karray[karray.length - 1]);
@@ -1054,13 +1060,31 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
 
     karray.push(drawElem(gl, textures, tvParams, 16, karray[karray.length - 2]));
 
-    // Chairs
+    // Chair 1
     modelMat.scale(5.0,0.125,5.0);
-    modelMat.translate(-1.0,-6.79,9.6);
-    modelMat.rotate(0.0, 0.0, 1.0, 0.0);
+    modelMat.translate(12.8,-6.79,-2.0);
+    modelMat.rotate(90.0, 0.0,1.0,0.0);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
-    
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 1]));
+
+    // Chair 2
+    modelMat.rotate(-90.0, 0.0,1.0,0.0);
+    modelMat.translate(-13.6,0.0,11.7);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 2]));
+
+    // Chair 3
+    modelMat.translate(-1.7,0.0,4.6);
+    modelMat.rotate(180.0, 0.0,1.0,0.0);
+    modelMat.translate(-3.3,0.0,30.1)
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 3]));
+
+    // Chair 4
+    modelMat.rotate(90.0, 0.0,1.0,0.0);
+    modelMat.translate(12.0,0.0,13.5);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 4]));
     
 };
 
