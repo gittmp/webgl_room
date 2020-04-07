@@ -117,6 +117,12 @@ function main(){
         ],
     };
 
+    let moveParams = {
+        step: 0.1,
+        chair1x: 0.0,
+        chair1z: 0.0,
+    };
+
     // Initialise vertex buffer
     const buffers = initBuffers(gl);
 
@@ -131,13 +137,13 @@ function main(){
 
     // Function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, textures, buffers);
+        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, textures);
         requestAnimationFrame(render);
     };
 
     // Moving viewpoint on keypress
     document.onkeydown = function(ev){
-        keypress(ev, cameraParams, lightParams, tvParams);
+        keypress(ev, cameraParams, lightParams, tvParams, moveParams);
     };
 
     // Rendering initial scene
@@ -205,7 +211,7 @@ function initTexArray(gl, programInfo){
 }
 
 //function to move camera when key pressed
-function keypress(ev, cameraParams, lightParams, tvParams){
+function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
     switch (ev.keyCode) {
         case 38: // Up arrow - look up
             cameraParams.ly -= cameraParams.lstep;
@@ -257,6 +263,30 @@ function keypress(ev, cameraParams, lightParams, tvParams){
             break;
         case 52: // 4 - tv channel 4
             tvParams.channel = 3;
+            break;
+        case 187: // + - move chair 1 (towards x axes)
+            if(!((moveParams.chair1z < 1.5 && moveParams.chair1x > 0.0) || (moveParams.chair1z > 3.3 && moveParams.chair1x > 0.0))){
+                moveParams.chair1x += moveParams.step;
+            }
+            console.log(moveParams.chair1x)
+            break;
+        case 189: // - - move chair 1 (away from x axes)
+            if(moveParams.chair1x > -1.9){
+                moveParams.chair1x -= moveParams.step;
+            }
+            console.log(moveParams.chair1x)
+            break;
+        case 48: // 0 - move chair 1 (away from z axes)
+            if(!(moveParams.chair1z < -0.6 || (moveParams.chair1x > 0.0 && moveParams.chair1z < 1.6))){
+                moveParams.chair1z -= moveParams.step;
+            }
+            console.log(moveParams.chair1z);
+            break;
+        case 57: // 9 - move chair 1 (towards z axes)
+            if(!(moveParams.chair1z > 4.0 || (moveParams.chair1x > 0.0 && moveParams.chair1z > 3.3))){
+                moveParams.chair1z += moveParams.step;
+            }
+            console.log(moveParams.chair1z)
             break;
         default:
             break;
@@ -914,7 +944,7 @@ function initAttribs(gl, programInfo, buffers){
 };
 
 // Initiating attribute array buffer & matrices
-function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, textures, buffers){
+function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -1064,10 +1094,14 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, text
     modelMat.scale(5.0,0.125,5.0);
     modelMat.translate(12.8,-6.79,-2.0);
     modelMat.rotate(90.0, 0.0,1.0,0.0);
+    modelMat.translate(moveParams.chair1x, 0.0, moveParams.chair1x);
+    modelMat.translate(moveParams.chair1z, 0.0, -moveParams.chair1z);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 1]));
 
     // Chair 2
+    modelMat.translate(-moveParams.chair1z, 0.0, moveParams.chair1z);
+    modelMat.translate(-moveParams.chair1x, 0.0, -moveParams.chair1x);
     modelMat.rotate(-90.0, 0.0,1.0,0.0);
     modelMat.translate(-13.6,0.0,11.7);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
