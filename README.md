@@ -28,7 +28,7 @@
 2. Input EITHER of the following into the address bar and hit enter:
 - *http://localhost:3000/room.html*
 - OR
--*http://127.0.0.1:3000/room.html*
+- *http://127.0.0.1:3000/room.html*
 
 3. This should then take you to a tab titled 'My Living Room' showcasing my WebGL room and instructions of how to interact with it.
 
@@ -38,9 +38,9 @@
 
 2. Base directory contains:
 - *client* directory containing all WebGL files.
--*node_modules* directory and *package.json*/*package-lock.json* files for the initiation/running of the server.
--*server.js* file containing server code.
--*README.md* (this) instruction file
+- *node_modules* directory and *package.json*/*package-lock.json* files for the initiation/running of the server.
+- *server.js* file containing server code.
+- *README.md* (this) instruction file
 
 2. *client* directory contains:
 - *content* directory containing all texture files.

@@ -237,7 +237,7 @@ function keypress(ev, cameraParams, lightParams, tvParams, moveParams, pictParam
         case 90: // X - move down (along negative y)
             cameraParams.ey += cameraParams.estep;
             break;
-        case 32: // SPACE - party mode (lights + sound)
+        case 54: // 6 - party mode (lights + sound)
             lightParams.partyOn = !lightParams.partyOn;
             if(lightParams.partyOn){
                 lightParams.partySong.play();
