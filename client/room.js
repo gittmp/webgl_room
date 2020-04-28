@@ -89,18 +89,15 @@ function main(){
         ex: 0.0,
         ey: 0.0,
         ez: 0.0,
-        lx: 0.0,
-        ly: 0.0,
-        lz: 0.0,    
     };
 
     // Initialise light parameters
     let lightParams = {
         ambient: new Vector3([0.2, 0.2, 0.2]),
         colour: new Vector3([1.0, 1.0, 1.0]),
-        posx: 4.1,
-        posy: 3.25,
-        posz: 4.1,
+        posx: 3.75,
+        posy: 2.0,
+        posz: 3.75,
         partyOn: false,
         partyCols: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
                     [1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
@@ -117,10 +114,22 @@ function main(){
         ],
     };
 
+    let pictParams = {
+        step: 0.1,
+        x: 0.0,
+        y: 0.0,
+    };
+
     let moveParams = {
         step: 0.1,
         chair1x: 0.0,
         chair1z: 0.0,
+        chair2x: 0.0,
+        chair2z: 0.0,
+        chair3x: 0.0,
+        chair3z: 0.0,
+        chair4x: 0.0,
+        chair4z: 0.0,
     };
 
     // Initialise vertex buffer
@@ -129,21 +138,18 @@ function main(){
     // Load textures into texture array
     let textures = initTexArray(gl, programInfo);
 
-    // document.getElementById("coordinates").innerHTML = `Eye position: (${cameraParams.ex.toFixed(1)}, ${cameraParams.ey.toFixed(1)}, ${cameraParams.ez.toFixed(1)})
-    //                                                     Looking at: (${cameraParams.lx.toFixed(1)}, ${cameraParams.ly.toFixed(1)}, ${cameraParams.lz.toFixed(1)})`; 
-
     // Initialise attribute arrays
     initAttribs(gl, programInfo, buffers);
 
     // Function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, textures);
+        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, pictParams, textures);
         requestAnimationFrame(render);
     };
 
     // Moving viewpoint on keypress
     document.onkeydown = function(ev){
-        keypress(ev, cameraParams, lightParams, tvParams, moveParams);
+        keypress(ev, cameraParams, lightParams, tvParams, moveParams, pictParams);
     };
 
     // Rendering initial scene
@@ -211,20 +217,8 @@ function initTexArray(gl, programInfo){
 }
 
 //function to move camera when key pressed
-function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
+function keypress(ev, cameraParams, lightParams, tvParams, moveParams, pictParams){
     switch (ev.keyCode) {
-        case 38: // Up arrow - look up
-            cameraParams.ly -= cameraParams.lstep;
-            break;
-        case 40: // Down arrow - look down
-            cameraParams.ly += cameraParams.lstep;
-            break;
-        case 39: // Right arrow - look right
-            cameraParams.lx += cameraParams.lstep;
-            break;
-        case 37: // Left arrow - look left
-            cameraParams.lx -= cameraParams.lstep;
-            break;
         case 87: // W - move forward (towards origin along negative z)
             cameraParams.ez += cameraParams.estep;
             break;
@@ -243,7 +237,7 @@ function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
         case 90: // X - move down (along negative y)
             cameraParams.ey += cameraParams.estep;
             break;
-        case 80: // P - party mode (lights + sound)
+        case 32: // SPACE - party mode (lights + sound)
             lightParams.partyOn = !lightParams.partyOn;
             if(lightParams.partyOn){
                 lightParams.partySong.play();
@@ -264,36 +258,108 @@ function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
         case 52: // 4 - tv channel 4
             tvParams.channel = 3;
             break;
+        case 71: // G - move picture 1 left
+            if(!(pictParams.x > 2.8)){
+                pictParams.x += pictParams.step;
+            }
+            break;
+        case 74: // J - move picture 1 right
+            if(!(pictParams.x < -0.9 || (pictParams.x < 1.9 && pictParams.y < -0.7))){
+                pictParams.x -= pictParams.step;
+            }
+            break;
+        case 89: // Y - move picture 1 up
+            if(!(pictParams.y > 0.5)){
+                pictParams.y += pictParams.step;
+            }
+            break;
+        case 72: // H - move picture 1 down
+            if(!(pictParams.y < -2.2 || (pictParams.x < 1.8 && pictParams.y < -0.6))){
+                pictParams.y -= pictParams.step;
+            }
+            break;
         case 187: // + - move chair 1 (towards x axes)
-            if(!((moveParams.chair1z < 1.5 && moveParams.chair1x > 0.0) || (moveParams.chair1z > 3.3 && moveParams.chair1x > 0.0))){
+            if(!((moveParams.chair1z < 1.5 && moveParams.chair1x > 0.0) || (moveParams.chair1z > 3.4 && moveParams.chair1x > 0.0) || moveParams.chair1x > 2.9)){
                 moveParams.chair1x += moveParams.step;
             }
-            console.log(moveParams.chair1x)
             break;
         case 189: // - - move chair 1 (away from x axes)
             if(moveParams.chair1x > -1.9){
                 moveParams.chair1x -= moveParams.step;
             }
-            console.log(moveParams.chair1x)
             break;
         case 48: // 0 - move chair 1 (away from z axes)
             if(!(moveParams.chair1z < -0.6 || (moveParams.chair1x > 0.0 && moveParams.chair1z < 1.6))){
                 moveParams.chair1z -= moveParams.step;
             }
-            console.log(moveParams.chair1z);
             break;
         case 57: // 9 - move chair 1 (towards z axes)
             if(!(moveParams.chair1z > 4.0 || (moveParams.chair1x > 0.0 && moveParams.chair1z > 3.3))){
                 moveParams.chair1z += moveParams.step;
             }
-            console.log(moveParams.chair1z)
+            break;
+        case 221: // ] - move chair 2 (towards x)
+            if(!(moveParams.chair2x > 1.8 || (moveParams.chair2x > -1.6 && moveParams.chair2z > 0.1 && moveParams.chair2x < 1.3) || moveParams.chair2x > -0.9 && moveParams.chair2z < -2.5)){
+                moveParams.chair2x += moveParams.step;
+            }
+            break;
+        case 219: // [ - move chair 2 (away from x)
+            if(!(moveParams.chair2x < -2.9 || (moveParams.chair2x < 1.5 && moveParams.chair2z > 0.1))){
+                moveParams.chair2x -= moveParams.step;
+            }
+            break;
+        case 80: // P - move chair 2 (away from z)
+            if(!(moveParams.chair2z > 1.7 || (moveParams.chair2z > 0.0 && moveParams.chair2x > -1.5 && moveParams.chair2x < 1.3))){
+                moveParams.chair2z += moveParams.step;
+            }
+            break;
+        case 79: // O - move chair 2 (towards z)
+            if(!(moveParams.chair2z < -3.1 || moveParams.chair2z < -2.4 && moveParams.chair2x > -0.8)){
+                moveParams.chair2z -= moveParams.step;
+            }
+            break;
+        case 220: // \ - move chair 3 (towards x)
+            if(!(moveParams.chair3x > 1.9 || (moveParams.chair3x > -1.5 && moveParams.chair3x < 0.0 && moveParams.chair3z > -2.2 && moveParams.chair3z < 0.0))){
+                moveParams.chair3x += moveParams.step;
+            }
+            break;
+        case 222: // ' - move chair 3 (away from x)
+            if(!(moveParams.chair3x < -2.8 || (moveParams.chair3z < 0.0 && moveParams.chair3z > -2.2 && moveParams.chair3x > -1.4 && moveParams.chair3x < 1.5))){
+                moveParams.chair3x -= moveParams.step;
+            }
+            break;
+        case 186: // ; - move chair 3 (away from z)
+            if(!(moveParams.chair3z > -0.1 || moveParams.chair3z > -2.2 && moveParams.chair3x < 1.4 && moveParams.chair3x > -1.4))
+            moveParams.chair3z += moveParams.step;
+            break;
+        case 76: // l - move chair 3 (towards z)
+            if(!(moveParams.chair3z < -4.7 || (moveParams.chair3z > -2.2 && moveParams.chair3x < 1.4 && moveParams.chair3x > -1.4) || (moveParams.chair3z < -4.1 && moveParams.chair3x > -0.8))){
+                moveParams.chair3z -= moveParams.step;
+            }
+            break;
+        case 191: // / - move chair 4 (towards x)
+            if(!(moveParams.chair4x > 0.9 || (moveParams.chair4x > -2.4 && moveParams.chair4x < -0.1 && moveParams.chair4z > -1.5) || (moveParams.chair4x > -1.9 && moveParams.chair4z < -3.4))){
+                moveParams.chair4x += moveParams.step;
+            }
+            break;
+        case 190: // . - move chair 4 (away from x)
+            if(!(moveParams.chair4x < -3.7 || (moveParams.chair4x < 0.0 && moveParams.chair4x > -2.3 && moveParams.chair4z > -1.5))){
+                moveParams.chair4x -= moveParams.step;
+            }
+            break;
+        case 188: // , - move chair 4 (away from z)
+            if(!(moveParams.chair4z > 0.6 || (moveParams.chair4x < -0.1 && moveParams.chair4x > -2.3 && moveParams.chair4z > -1.6))){
+                moveParams.chair4z += moveParams.step;
+            }
+            break;
+        case 77: // m - move chair 4 (towards z)
+            if(!(moveParams.chair4z < -4.0 || (moveParams.chair4x > -1.9 && moveParams.chair4z < -3.3))){
+                moveParams.chair4z -= moveParams.step;
+            }
             break;
         default:
             break;
     }
-
-    // document.getElementById("coordinates").innerHTML = `Eye position: (${cameraParams.ex.toFixed(1)}, ${cameraParams.ey.toFixed(1)}, ${cameraParams.ez.toFixed(1)})
-    //                                                     Looking at: (${cameraParams.lx.toFixed(1)}, ${cameraParams.ly.toFixed(1)}, ${cameraParams.lz.toFixed(1)})`; 
 }
 
 //function to determine if dimentions of texture are of power 2
@@ -724,12 +790,6 @@ function initBuffers(gl){
         1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
         1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
 
-        // 1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
-        // 1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,
-
-        // 1.0,0.0,-1.0,  1.0,0.0,-1.0,  1.0,0.0,1.0,  1.0,0.0,1.0,
-        // 1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,
-
         // Centers
         0.0,1.0,0.0,  0.0,-1.0,0.0, 
     ];
@@ -944,7 +1004,7 @@ function initAttribs(gl, programInfo, buffers){
 };
 
 // Initiating attribute array buffer & matrices
-function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, textures){
+function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, pictParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -984,25 +1044,6 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, move
         lightParams.posy + cameraParams.ey,
         lightParams.posz + cameraParams.ez
     ]);
-
-    // let lightPos2 = [
-    //     lightPos1[0],
-    //     lightPos1[1]*Math.cos(cameraParams.ly) - lightPos1[2]*Math.sin(cameraParams.ly),
-    //     lightPos1[1]*Math.sin(cameraParams.ly) + lightPos1[2]*Math.cos(cameraParams.ly)
-    // ];
-
-    // let lightPos = new Vector3([
-    //     lightPos2[0]*Math.cos(cameraParams.lx) + lightPos2[2]*Math.sin(cameraParams.lx),
-    //     lightPos2[1],
-    //     lightPos2[2]*Math.cos(cameraParams.lx) - lightPos2[0]*Math.sin(cameraParams.lx)
-    // ]);
-
-
-    // Rotate to look left/right/up/down
-    modelMat.setTranslate(-cameraParams.ex, 0.0, -cameraParams.ez);
-    modelMat.rotate(cameraParams.lx, 0.0, 1.0, 0.0);
-    modelMat.rotate(cameraParams.ly, 1.0, 0.0, 0.0);
-    modelMat.translate(cameraParams.ex, 0.0, cameraParams.ez);
 
     // Translate to move in +/- x/y/z direction
     modelMat.translate(cameraParams.ex,cameraParams.ey,cameraParams.ez);
@@ -1047,8 +1088,14 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, move
     karray.push(drawElem(gl, textures, tvParams, 8, karray[karray.length - 1]));
 
     // Picture 1
+    modelMat.translate(-pictParams.x,pictParams.y,pictParams.x);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
     karray.push(drawElem(gl, textures, tvParams, 9, karray[karray.length - 1]));
     karray.push(drawElem(gl, textures, tvParams, 10, karray[karray.length - 1]));
+
+    modelMat.translate(pictParams.x,-pictParams.y,-pictParams.x);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
 
     // Picture 2
     karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 1]));
@@ -1094,30 +1141,44 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, move
     modelMat.scale(5.0,0.125,5.0);
     modelMat.translate(12.8,-6.79,-2.0);
     modelMat.rotate(90.0, 0.0,1.0,0.0);
-    modelMat.translate(moveParams.chair1x, 0.0, moveParams.chair1x);
-    modelMat.translate(moveParams.chair1z, 0.0, -moveParams.chair1z);
+    modelMat.translate(moveParams.chair1x + moveParams.chair1z, 0.0, moveParams.chair1x - moveParams.chair1z);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    modelMat.translate(-moveParams.chair1z - moveParams.chair1x, 0.0, moveParams.chair1z - moveParams.chair1x);
+
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 1]));
 
     // Chair 2
-    modelMat.translate(-moveParams.chair1z, 0.0, moveParams.chair1z);
-    modelMat.translate(-moveParams.chair1x, 0.0, -moveParams.chair1x);
     modelMat.rotate(-90.0, 0.0,1.0,0.0);
     modelMat.translate(-13.6,0.0,11.7);
+    modelMat.translate(moveParams.chair2x, 0.0, -moveParams.chair2x);
+    modelMat.translate(moveParams.chair2z, 0.0, moveParams.chair2z);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    modelMat.translate(-moveParams.chair2z, 0.0, -moveParams.chair2z);
+    modelMat.translate(-moveParams.chair2x, 0.0, moveParams.chair2x);
+
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 2]));
 
     // Chair 3
     modelMat.translate(-1.7,0.0,4.6);
     modelMat.rotate(180.0, 0.0,1.0,0.0);
-    modelMat.translate(-3.3,0.0,30.1)
+    modelMat.translate(-3.3,0.0,30.1);
+    modelMat.translate(-moveParams.chair3x, 0.0, moveParams.chair3x);
+    modelMat.translate(-moveParams.chair3z, 0.0, -moveParams.chair3z);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    modelMat.translate(moveParams.chair3z, 0.0, moveParams.chair3z);
+    modelMat.translate(moveParams.chair3x, 0.0, -moveParams.chair3x);
+
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 3]));
 
     // Chair 4
     modelMat.rotate(90.0, 0.0,1.0,0.0);
     modelMat.translate(12.0,0.0,13.5);
+    modelMat.translate(-moveParams.chair4x, 0.0, -moveParams.chair4x);
+    modelMat.translate(moveParams.chair4z, 0.0, -moveParams.chair4z);
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+    modelMat.translate(moveParams.chair4x, 0.0, moveParams.chair4x);
+    modelMat.translate-(moveParams.chair4z, 0.0, moveParams.chair4z);
+
     karray.push(drawElem(gl, textures, tvParams, 17, karray[karray.length - 4]));
     
 };
