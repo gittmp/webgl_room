@@ -4,5 +4,5 @@ var app = express();
 app.use(express.static('client'));
 
 app.listen(3000, function(){
-    console.log("WEBGL_ROOM SERVER LISTENING...");
+    console.log("WEBGL_ROOM SERVER RUNNNG...");
 });

@@ -4,6 +4,24 @@
         <title>
             My Living Room
         </title>
+        <style>
+            table, th, td {
+                border: 2px solid black;
+                border-collapse: collapse;
+            }
+            th, td {
+                padding: 15px;
+                text-align: left;
+            }
+            table {
+                border-spacing: 5px;
+            }
+            caption {
+                padding: 5px;
+                text-align: left;
+                font-size: 25px;
+            }
+        </style>
     </head>
     <body onload="main()">
         <!-- create webGL canvas on HTML page -->
@@ -14,9 +32,150 @@
         <script src="./lib.js"></script>
         <script src="./vecmat.js"></script>
 
-        <!-- <div id="coordinates">
-
-        </div> -->
+        <!-- Page control instructions -->
+        <br><br>
+        <div id="instructions">
+            <table style="width:100%">
+                <caption>Instructions:</caption>
+                <tr>
+                    <th>Action type</th>
+                    <th>Keyboard key</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td rowspan="6">Moving camera</td>
+                    <td>W</td>
+                    <td>Move camera forwards</td>
+                </tr>
+                <tr>
+                    <td>S</td>
+                    <td>Move camera backwards</td>
+                </tr>
+                <tr>
+                    <td>A</td>
+                    <td>Move camera left</td>
+                </tr>
+                <tr>
+                    <td>D</td>
+                    <td>Move camera right</td>
+                </tr>
+                <tr>
+                    <td>X</td>
+                    <td>Move camera up</td>
+                </tr>
+                <tr>
+                    <td>Z</td>
+                    <td>Move camera down</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Changing TV channels</td>
+                    <td>1</td>
+                    <td>Channel 1 - static</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Channel 2 - Despicable Me</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Channel 3 - The Simpsons</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Channel 4 - Star Wars</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Moving picture frame <br> (painting of Durham on left wall)</td>
+                    <td>Y</td>
+                    <td>Move painting up</td>
+                </tr>
+                <tr>
+                    <td>H</td>
+                    <td>Move painting down</td>
+                </tr>
+                <tr>
+                    <td>G</td>
+                    <td>Move painting left</td>
+                </tr>
+                <tr>
+                    <td>J</td>
+                    <td>Move painting right</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Moving chair 1 <br> (chair originally furthest from right wall)</td>
+                    <td>+</td>
+                    <td>Move chair forwards</td>
+                </tr>
+                <tr>
+                    <td>-</td>
+                    <td>Move chair backwards</td>
+                </tr>
+                <tr>
+                    <td>0</td>
+                    <td>Move chair right</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Move chair left</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Moving chair 2 <br> (chair originally closest to left wall)</td>
+                    <td>]</td>
+                    <td>Move chair forwards</td>
+                </tr>
+                <tr>
+                    <td>[</td>
+                    <td>Move chair backwards</td>
+                </tr>
+                <tr>
+                    <td>P</td>
+                    <td>Move chair right</td>
+                </tr>
+                <tr>
+                    <td>O</td>
+                    <td>Move chair left</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Moving chair 3 <br> (chair originally furthest from left wall)</td>
+                    <td>\</td>
+                    <td>Move chair forwards</td>
+                </tr>
+                <tr>
+                    <td>'</td>
+                    <td>Move chair backwards</td>
+                </tr>
+                <tr>
+                    <td>;</td>
+                    <td>Move chair right</td>
+                </tr>
+                <tr>
+                    <td>l</td>
+                    <td>Move chair left</td>
+                </tr>
+                <tr>
+                    <td rowspan="4">Moving chair 4 <br> (chair originally closest to right wall)</td>
+                    <td>/</td>
+                    <td>Move chair forwards</td>
+                </tr>
+                <tr>
+                    <td>.</td>
+                    <td>Move chair backwards</td>
+                </tr>
+                <tr>
+                    <td>,</td>
+                    <td>Move chair right</td>
+                </tr>
+                <tr>
+                    <td>M</td>
+                    <td>Move chair left</td>
+                </tr>
+                <tr>
+                    <td rowspan="1">Extra features</td>
+                    <td>SPACE</td>
+                    <td>Toggle party mode on/off <br> (WARNING: uses flashing lights and volume)</td>
+                </tr>
+            </table>
+        </div>
 
     </body>
 </html>

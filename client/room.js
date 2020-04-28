@@ -89,18 +89,15 @@ function main(){
         ex: 0.0,
         ey: 0.0,
         ez: 0.0,
-        lx: 0.0,
-        ly: 0.0,
-        lz: 0.0,    
     };
 
     // Initialise light parameters
     let lightParams = {
         ambient: new Vector3([0.2, 0.2, 0.2]),
         colour: new Vector3([1.0, 1.0, 1.0]),
-        posx: 4.1,
-        posy: 3.25,
-        posz: 4.1,
+        posx: 3.75,
+        posy: 2.0,
+        posz: 3.75,
         partyOn: false,
         partyCols: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], 
                     [1.0, 1.0, 0.0], [0.0, 1.0, 1.0], [1.0, 0.0, 1.0]],
@@ -115,6 +112,12 @@ function main(){
             loadTexture(gl, programInfo, 'content/simpsons.jpg'),
             loadTexture(gl, programInfo, 'content/yoda.jpg'),
         ],
+    };
+
+    let pictParams = {
+        step: 0.1,
+        x: 0.0,
+        y: 0.0,
     };
 
     let moveParams = {
@@ -140,13 +143,13 @@ function main(){
 
     // Function to render scene to canvas
     function render() {
-        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, textures);
+        draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, pictParams, textures);
         requestAnimationFrame(render);
     };
 
     // Moving viewpoint on keypress
     document.onkeydown = function(ev){
-        keypress(ev, cameraParams, lightParams, tvParams, moveParams);
+        keypress(ev, cameraParams, lightParams, tvParams, moveParams, pictParams);
     };
 
     // Rendering initial scene
@@ -214,20 +217,8 @@ function initTexArray(gl, programInfo){
 }
 
 //function to move camera when key pressed
-function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
+function keypress(ev, cameraParams, lightParams, tvParams, moveParams, pictParams){
     switch (ev.keyCode) {
-        case 38: // Up arrow - look up
-            cameraParams.ly -= cameraParams.lstep;
-            break;
-        case 40: // Down arrow - look down
-            cameraParams.ly += cameraParams.lstep;
-            break;
-        case 39: // Right arrow - look right
-            cameraParams.lx += cameraParams.lstep;
-            break;
-        case 37: // Left arrow - look left
-            cameraParams.lx -= cameraParams.lstep;
-            break;
         case 87: // W - move forward (towards origin along negative z)
             cameraParams.ez += cameraParams.estep;
             break;
@@ -266,6 +257,26 @@ function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
             break;
         case 52: // 4 - tv channel 4
             tvParams.channel = 3;
+            break;
+        case 71: // G - move picture 1 left
+            if(!(pictParams.x > 2.8)){
+                pictParams.x += pictParams.step;
+            }
+            break;
+        case 74: // J - move picture 1 right
+            if(!(pictParams.x < -0.9 || (pictParams.x < 1.9 && pictParams.y < -0.7))){
+                pictParams.x -= pictParams.step;
+            }
+            break;
+        case 89: // Y - move picture 1 up
+            if(!(pictParams.y > 0.5)){
+                pictParams.y += pictParams.step;
+            }
+            break;
+        case 72: // H - move picture 1 down
+            if(!(pictParams.y < -2.2 || (pictParams.x < 1.8 && pictParams.y < -0.6))){
+                pictParams.y -= pictParams.step;
+            }
             break;
         case 187: // + - move chair 1 (towards x axes)
             if(!((moveParams.chair1z < 1.5 && moveParams.chair1x > 0.0) || (moveParams.chair1z > 3.4 && moveParams.chair1x > 0.0) || moveParams.chair1x > 2.9)){
@@ -330,25 +341,21 @@ function keypress(ev, cameraParams, lightParams, tvParams, moveParams){
             if(!(moveParams.chair4x > 0.9 || (moveParams.chair4x > -2.4 && moveParams.chair4x < -0.1 && moveParams.chair4z > -1.5) || (moveParams.chair4x > -1.9 && moveParams.chair4z < -3.4))){
                 moveParams.chair4x += moveParams.step;
             }
-            console.log(moveParams.chair4x);
             break;
         case 190: // . - move chair 4 (away from x)
             if(!(moveParams.chair4x < -3.7 || (moveParams.chair4x < 0.0 && moveParams.chair4x > -2.3 && moveParams.chair4z > -1.5))){
                 moveParams.chair4x -= moveParams.step;
             }
-            console.log(moveParams.chair4x);
             break;
         case 188: // , - move chair 4 (away from z)
             if(!(moveParams.chair4z > 0.6 || (moveParams.chair4x < -0.1 && moveParams.chair4x > -2.3 && moveParams.chair4z > -1.6))){
                 moveParams.chair4z += moveParams.step;
             }
-            console.log(moveParams.chair4z);
             break;
         case 77: // m - move chair 4 (towards z)
             if(!(moveParams.chair4z < -4.0 || (moveParams.chair4x > -1.9 && moveParams.chair4z < -3.3))){
                 moveParams.chair4z -= moveParams.step;
             }
-            console.log(moveParams.chair4z);
             break;
         default:
             break;
@@ -783,12 +790,6 @@ function initBuffers(gl){
         1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
         1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
 
-        // 1.0,1.0,-1.0,  1.0,1.0,-1.0,  1.0,1.0,1.0,  1.0,1.0,1.0,
-        // 1.0,1.0,1.0,  1.0,1.0,1.0,  -1.0,1.0,-1.0,  1.0,1.0,-1.0,
-
-        // 1.0,0.0,-1.0,  1.0,0.0,-1.0,  1.0,0.0,1.0,  1.0,0.0,1.0,
-        // 1.0,0.0,1.0,  1.0,0.0,1.0,  -1.0,0.0,-1.0,  1.0,0.0,-1.0,
-
         // Centers
         0.0,1.0,0.0,  0.0,-1.0,0.0, 
     ];
@@ -1003,7 +1004,7 @@ function initAttribs(gl, programInfo, buffers){
 };
 
 // Initiating attribute array buffer & matrices
-function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, textures){
+function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, moveParams, pictParams, textures){
     //clear the canvas to opaque black
     gl.clearColor(0.1, 0.1, 0.1, 1.0);
     gl.clearDepth(1.0);
@@ -1043,25 +1044,6 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, move
         lightParams.posy + cameraParams.ey,
         lightParams.posz + cameraParams.ez
     ]);
-
-    // let lightPos2 = [
-    //     lightPos1[0],
-    //     lightPos1[1]*Math.cos(cameraParams.ly) - lightPos1[2]*Math.sin(cameraParams.ly),
-    //     lightPos1[1]*Math.sin(cameraParams.ly) + lightPos1[2]*Math.cos(cameraParams.ly)
-    // ];
-
-    // let lightPos = new Vector3([
-    //     lightPos2[0]*Math.cos(cameraParams.lx) + lightPos2[2]*Math.sin(cameraParams.lx),
-    //     lightPos2[1],
-    //     lightPos2[2]*Math.cos(cameraParams.lx) - lightPos2[0]*Math.sin(cameraParams.lx)
-    // ]);
-
-
-    // Rotate to look left/right/up/down
-    modelMat.setTranslate(-cameraParams.ex, 0.0, -cameraParams.ez);
-    modelMat.rotate(cameraParams.lx, 0.0, 1.0, 0.0);
-    modelMat.rotate(cameraParams.ly, 1.0, 0.0, 0.0);
-    modelMat.translate(cameraParams.ex, 0.0, cameraParams.ez);
 
     // Translate to move in +/- x/y/z direction
     modelMat.translate(cameraParams.ex,cameraParams.ey,cameraParams.ez);
@@ -1106,8 +1088,14 @@ function draw(gl, canvas, programInfo, cameraParams, lightParams, tvParams, move
     karray.push(drawElem(gl, textures, tvParams, 8, karray[karray.length - 1]));
 
     // Picture 1
+    modelMat.translate(-pictParams.x,pictParams.y,pictParams.x);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
+
     karray.push(drawElem(gl, textures, tvParams, 9, karray[karray.length - 1]));
     karray.push(drawElem(gl, textures, tvParams, 10, karray[karray.length - 1]));
+
+    modelMat.translate(pictParams.x,-pictParams.y,-pictParams.x);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMat.elements);
 
     // Picture 2
     karray.push(drawElem(gl, textures, tvParams, 12, karray[karray.length - 1]));
