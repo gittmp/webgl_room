@@ -38,7 +38,7 @@
 
 2. Base directory contains:
 - *client* directory containing all WebGL files.
-- *node_modules* directory and *package.json*/*package-lock.json* files for the initiation/running of the server.
+- *package.json* file for the initiation of the server.
 - *server.js* file containing server code.
 - *README.md* (this) instruction file
 
